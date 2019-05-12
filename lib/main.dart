@@ -289,10 +289,12 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
       return Future.error('Write storage permission not granted');
     }
 
-    var fileName = join(join(await AlbumSaver.getDcimPath(), "DFNightSelfies"),
-        basename(_mediaPreviewPath));
-    File(_mediaPreviewPath).rename(fileName);
-    return Future.value(fileName);
+    var fileFolder = join(await AlbumSaver.getDcimPath(), "DFNightSelfies");
+    await Directory(fileFolder).create(recursive: true);
+    var filePath = join(fileFolder, basename(_mediaPreviewPath));
+    File(_mediaPreviewPath).copySync(filePath);
+    File(_mediaPreviewPath).delete();
+    return Future.value(filePath);
   }
 
   void deleteMedia() {
