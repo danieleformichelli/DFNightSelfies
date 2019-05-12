@@ -102,10 +102,12 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
         return _imagePreview;
       } else {
         // video
-        var widget = AspectRatio(
-          aspectRatio: _videoPlayerController.value.aspectRatio,
-          // Use the VideoPlayer widget to display the video
-          child: VideoPlayer(_videoPlayerController),
+        var widget = Center(
+          child: AspectRatio(
+            aspectRatio: _videoPlayerController.value.aspectRatio,
+            // Use the VideoPlayer widget to display the video
+            child: VideoPlayer(_videoPlayerController),
+          ),
         );
         _videoPlayerController.setLooping(true);
         _videoPlayerController.play();
