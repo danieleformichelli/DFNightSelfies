@@ -209,18 +209,18 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
           onPressed: openLibrary,
         ),
         IconButton(
-          icon: Icon(timer == 10
-              ? Icons.timer_10
-              : timer == 3 ? Icons.timer_3 : Icons.timer_off),
-          onPressed: toggleTimer,
-        ),
-        IconButton(
           icon: Icon(Icons.colorize),
           onPressed: pickColor,
         ),
         IconButton(
           icon: Icon(Icons.photo_size_select_large),
           onPressed: togglePreviewSize,
+        ),
+        IconButton(
+          icon: Icon(timer == 10
+              ? Icons.timer_10
+              : timer == 3 ? Icons.timer_3 : Icons.timer_off),
+          onPressed: toggleTimer,
         ),
         IconButton(
           icon: Icon(photoOrVideo ? Icons.camera_alt : Icons.videocam),
