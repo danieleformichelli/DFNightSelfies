@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:album_saver/album_saver.dart';
@@ -45,12 +46,13 @@ class DfNightSelfiesMain extends StatefulWidget {
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   var photoOrVideo = true;
   var timer = 0;
+  var remainingTimer = 0;
 
   var state = DfNightSelfiesState.INIT;
   CameraController _cameraController;
   VideoPlayerController _videoPlayerController;
   Future _initializeCameraControllerFuture;
-  Image _imagePreview;
+  Widget _imagePreview;
   String _mediaPreviewPath;
   var _pictureToScreenRatio = 3;
   var _backgroundColor = Colors.white;
@@ -75,17 +77,9 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: getCameraPreviewOrMediaPreview(),
-              ),
-            ),
-          ],
-        ),
+        child: getCameraPreviewOrMediaPreview(),
         onTap: () async {
-          photoOrVideo ? takePhoto() : startOrStopVideo();
+          startCountDownOrTake();
         },
       ),
       backgroundColor: _backgroundColor,
@@ -145,14 +139,31 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
               var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
               var cameraPreviewWidth =
                   cameraPreviewHeight * _cameraController.value.aspectRatio;
-              return RotatedBox(
-                quarterTurns: turns,
-                child: Container(
-                  child: CameraPreview(_cameraController),
-                  height: cameraPreviewHeight,
-                  width: cameraPreviewWidth,
+              var cameraPreviewBox = Center(
+                child: RotatedBox(
+                  quarterTurns: turns,
+                  child: Container(
+                    child: CameraPreview(_cameraController),
+                    height: cameraPreviewHeight,
+                    width: cameraPreviewWidth,
+                  ),
                 ),
               );
+
+              var stackChildren = List<Widget>();
+              stackChildren.add(cameraPreviewBox);
+              if (remainingTimer != 0) {
+                stackChildren.add(
+                  Center(
+                    child: Text(
+                      '$remainingTimer',
+                      style: TextStyle(fontSize: 64, color: Colors.white30),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              return Stack(children: stackChildren);
             });
           } else {
             return CircularProgressIndicator();
@@ -345,7 +356,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   }
 
   takePhoto() async {
-    if (state != DfNightSelfiesState.CAMERA_PREVIEW) {
+    if (state != DfNightSelfiesState.CAMERA_PREVIEW &&
+        state != DfNightSelfiesState.COUNTDOWN) {
       return;
     }
 
@@ -362,7 +374,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
       setState(() {
         state = DfNightSelfiesState.MEDIA_PREVIEW;
         _mediaPreviewPath = imagePath;
-        _imagePreview = Image.file(File(imagePath));
+        _imagePreview = Center(child: Image.file(File(imagePath)));
       });
     } catch (e) {
       state = DfNightSelfiesState.CAMERA_PREVIEW;
@@ -401,5 +413,33 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
       default:
         return;
     }
+  }
+
+  void startCountDownOrTake() {
+    if (timer == 0) {
+      take();
+    } else {
+      setState(() {
+        remainingTimer = timer;
+        state = DfNightSelfiesState.COUNTDOWN;
+        Timer _timer;
+        _timer = new Timer.periodic(
+          Duration(seconds: 1),
+          (Timer timer) => setState(
+                () {
+                  --remainingTimer;
+                  if (remainingTimer <= 0) {
+                    _timer.cancel();
+                    take();
+                  }
+                },
+              ),
+        );
+      });
+    }
+  }
+
+  void take() {
+    photoOrVideo ? takePhoto() : startOrStopVideo();
   }
 }
