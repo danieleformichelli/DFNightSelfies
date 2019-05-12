@@ -1,7 +1,7 @@
 name: dfnightselfies
 description: An application to take selfies in low light conditions
 
-version: 1.0.0+1
+version: 2.0.0+40
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -17,6 +17,7 @@ dependencies:
   path:
   permission_handler:
   screen:
+  video_player:
 
   cupertino_icons: ^0.1.2
   native_device_orientation:
