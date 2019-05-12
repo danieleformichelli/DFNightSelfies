@@ -75,21 +75,23 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        child: getCameraPreviewOrMediaPreview(),
-        onTap: () async {
-          startCountDownOrTake();
-        },
-      ),
-      backgroundColor: _backgroundColor,
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: getButtons(),
+    return GestureDetector(
+      child: Scaffold(
+        body: SafeArea(
+          child: getCameraPreviewOrMediaPreview(),
+        ),
+        backgroundColor: _backgroundColor,
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: getButtons(),
+          ),
         ),
       ),
+      onTap: () async {
+        startCountDownOrTake();
+      },
     );
   }
 
