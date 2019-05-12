@@ -45,6 +45,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   Future _initializeControllerFuture;
   Image _imagePreview;
   String _imagePreviewPath;
+  int _pictureToScreenRatio = 3;
 
   @override
   void initState() {
@@ -64,10 +65,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        child: Container(
-          child: Center(
-            child: getPreviewOrImage(),
-          ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: getPreviewOrImage(),
+              ),
+            ),
+          ],
         ),
         onTap: () async {
           takePhotoOrVideo();
@@ -113,7 +118,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
                   break;
               }
 
-              var cameraPreviewHeight = referenceSize / 3;
+              var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
               var cameraPreviewWidth =
                   cameraPreviewHeight * _controller.value.aspectRatio;
               return RotatedBox(
@@ -169,11 +174,32 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
           onPressed: toggleTimer,
         ),
         IconButton(
+          icon: Icon(Icons.colorize),
+          onPressed: pickColor,
+        ),
+        IconButton(
+          icon: Icon(Icons.photo_size_select_large),
+          onPressed: togglePreviewSize,
+        ),
+        IconButton(
           icon: Icon(photoOrVideo ? Icons.camera_alt : Icons.videocam),
           onPressed: togglePhotoOrVideo,
         ),
       ];
     }
+  }
+
+  void pickColor() {
+    // TODO pickColor
+  }
+
+  void togglePreviewSize() {
+    setState(() {
+      ++_pictureToScreenRatio;
+      if (_pictureToScreenRatio > 5) {
+        _pictureToScreenRatio = 2;
+      }
+    });
   }
 
   Future<String> saveImagePreview() async {
