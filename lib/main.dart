@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' show join;
 import 'package:path/path.dart' show basename;
@@ -178,57 +179,62 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   }
 
   List<Widget> getButtons() {
-    if (state == DfNightSelfiesState.MEDIA_PREVIEW) {
-      return <Widget>[
-        IconButton(
-          icon: Icon(Icons.save),
-          onPressed: () async {
-            await saveImage();
-            restartPreview();
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.delete),
-          onPressed: () {
-            deleteImage();
-            restartPreview();
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.share),
-          onPressed: () async {
-            await saveImage();
-            await shareImage();
-            deleteImage();
-            restartPreview();
-          },
-        ),
-      ];
-    } else {
-      return <Widget>[
-        IconButton(
-          icon: Icon(Icons.photo_library),
-          onPressed: openLibrary,
-        ),
-        IconButton(
-          icon: Icon(Icons.colorize),
-          onPressed: pickColor,
-        ),
-        IconButton(
-          icon: Icon(Icons.photo_size_select_large),
-          onPressed: togglePreviewSize,
-        ),
-        IconButton(
-          icon: Icon(timer == 10
-              ? Icons.timer_10
-              : timer == 3 ? Icons.timer_3 : Icons.timer_off),
-          onPressed: toggleTimer,
-        ),
-        IconButton(
-          icon: Icon(photoOrVideo ? Icons.camera_alt : Icons.videocam),
-          onPressed: togglePhotoOrVideo,
-        ),
-      ];
+    switch (state) {
+      case DfNightSelfiesState.MEDIA_PREVIEW:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: () async {
+              await saveMedia();
+              restartPreview();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              deleteMedia();
+              restartPreview();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () async {
+              var fileName = await saveMedia();
+              await shareMedia(fileName);
+              restartPreview();
+            },
+          ),
+        ];
+
+      case DfNightSelfiesState.CAMERA_PREVIEW:
+      case DfNightSelfiesState.INIT:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.photo_library),
+            onPressed: openLibrary,
+          ),
+          IconButton(
+            icon: Icon(Icons.colorize),
+            onPressed: pickColor,
+          ),
+          IconButton(
+            icon: Icon(Icons.photo_size_select_large),
+            onPressed: togglePreviewSize,
+          ),
+          IconButton(
+            icon: Icon(timer == 10
+                ? Icons.timer_10
+                : timer == 3 ? Icons.timer_3 : Icons.timer_off),
+            onPressed: toggleTimer,
+          ),
+          IconButton(
+            icon: Icon(photoOrVideo ? Icons.camera_alt : Icons.videocam),
+            onPressed: togglePhotoOrVideo,
+          ),
+        ];
+
+      default:
+        return List();
     }
   }
 
@@ -276,27 +282,30 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
     });
   }
 
-  saveImage() async {
+  Future<String> saveMedia() async {
     var permission =
         await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
       return Future.error('Write storage permission not granted');
     }
 
-    AlbumSaver.saveToAlbum(filePath: _mediaPreviewPath, albumName: "");
+    var fileName = join(join(await AlbumSaver.getDcimPath(), "DFNightSelfies"),
+        basename(_mediaPreviewPath));
+    File(_mediaPreviewPath).rename(fileName);
+    return Future.value(fileName);
   }
 
-  void deleteImage() {
+  void deleteMedia() {
     File(_mediaPreviewPath).delete();
     setState(() {
       state = DfNightSelfiesState.CAMERA_PREVIEW;
     });
   }
 
-  Future shareImage() async {
-    var fileBaseName = basename(_mediaPreviewPath);
+  Future shareMedia(String fileName) async {
+    var fileBaseName = basename(fileName);
     return Share.file(fileBaseName, fileBaseName,
-        File(_mediaPreviewPath).readAsBytesSync(), 'image/png');
+        File(fileName).readAsBytesSync(), 'image/png');
   }
 
   void openLibrary() {
@@ -371,7 +380,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
       final imagePath = join(
         (await getTemporaryDirectory()).path,
-        'DFNightSelfies_${DateTime.now()}.png',
+        'DFNightSelfies_${getDateTime()}.png',
       );
 
       await _cameraController.takePicture(imagePath);
@@ -386,6 +395,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
     }
   }
 
+  getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+
   startOrStopVideo() async {
     switch (state) {
       case DfNightSelfiesState.CAMERA_PREVIEW:
@@ -397,7 +408,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
         _mediaPreviewPath = join(
           (await getTemporaryDirectory()).path,
-          'DFNightSelfies_${DateTime.now()}.mp4',
+          'DFNightSelfies_${getDateTime()}.mp4',
         );
 
         await _cameraController.prepareForVideoRecording();

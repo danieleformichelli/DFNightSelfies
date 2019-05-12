@@ -13,6 +13,7 @@ dependencies:
   camera:
   esys_flutter_share:
   flutter_material_color_picker:
+  intl:
   path_provider:
   path:
   permission_handler:
