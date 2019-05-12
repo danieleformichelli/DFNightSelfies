@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
@@ -45,7 +46,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   Future _initializeControllerFuture;
   Image _imagePreview;
   String _imagePreviewPath;
-  int _pictureToScreenRatio = 3;
+  var _pictureToScreenRatio = 3;
+  var _backgroundColor = Colors.white;
 
   @override
   void initState() {
@@ -78,6 +80,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
           takePhotoOrVideo();
         },
       ),
+      backgroundColor: _backgroundColor,
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisSize: MainAxisSize.max,
@@ -190,7 +193,26 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   }
 
   void pickColor() {
-    // TODO pickColor
+    List<MaterialColor> colors = List<MaterialColor>();
+    colors.addAll(Colors.primaries);
+    colors.add(MaterialColor(Colors.white.value, Map()));
+
+    showDialog(
+      context: context,
+      builder: (_) => Center(
+            child: Material(
+              child: MaterialColorPicker(
+                  allowShades: false,
+                  colors: colors,
+                  onMainColorChange: (Color color) {
+                    setState(() {
+                      _backgroundColor = color;
+                    });
+                  },
+                  selectedColor: _backgroundColor),
+            ),
+          ),
+    );
   }
 
   void togglePreviewSize() {

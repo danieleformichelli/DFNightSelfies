@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   camera:
+  flutter_material_color_picker:
   path_provider:
   path:
   screen:
