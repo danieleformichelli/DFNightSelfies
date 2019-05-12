@@ -9,10 +9,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  album_saver:
   camera:
+  esys_flutter_share:
   flutter_material_color_picker:
   path_provider:
   path:
+  permission_handler:
   screen:
 
   cupertino_icons: ^0.1.2

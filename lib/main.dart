@@ -1,11 +1,15 @@
 import 'dart:io';
 
+import 'package:album_saver/album_saver.dart';
 import 'package:camera/camera.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' show join;
+import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:screen/screen.dart';
 
 void main() => runApp(DfNightSelfiesApp());
@@ -84,7 +88,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: getButtons(),
         ),
       ),
@@ -145,22 +149,26 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
     if (state == DfNightSelfiesState.IMAGE_PREVIEW) {
       return <Widget>[
         IconButton(
-          icon: Icon(Icons.check),
+          icon: Icon(Icons.save),
           onPressed: () async {
-            saveImagePreview();
-            setState(() {
-              state = DfNightSelfiesState.CAMERA_PREVIEW;
-            });
+            await saveImage();
+            restartPreview();
           },
         ),
         IconButton(
           icon: Icon(Icons.delete),
-          onPressed: deleteImagePreview,
+          onPressed: () {
+            deleteImage();
+            restartPreview();
+          },
         ),
         IconButton(
           icon: Icon(Icons.share),
           onPressed: () async {
-            shareImage(await saveImagePreview());
+            await saveImage();
+            await shareImage();
+            deleteImage();
+            restartPreview();
           },
         ),
       ];
@@ -190,6 +198,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
         ),
       ];
     }
+  }
+
+  void restartPreview() {
+    setState(() {
+      state = DfNightSelfiesState.CAMERA_PREVIEW;
+      _imagePreview = null;
+      _imagePreviewPath = null;
+    });
   }
 
   void pickColor() {
@@ -224,21 +240,27 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
     });
   }
 
-  Future<String> saveImagePreview() async {
-    setState(() {
-      // TODO save
-      _imagePreview = null;
-      _imagePreviewPath = null;
-    });
+  saveImage() async {
+    var permission =
+        await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+    if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
+      return Future.error('Write storage permission not granted');
+    }
 
-    return '';
+    AlbumSaver.saveToAlbum(filePath: _imagePreviewPath, albumName: "");
   }
 
-  void deleteImagePreview() {
-    saveImagePreview();
+  void deleteImage() {
+    File(_imagePreviewPath).delete();
     setState(() {
       state = DfNightSelfiesState.CAMERA_PREVIEW;
     });
+  }
+
+  Future shareImage() async {
+    var fileBaseName = basename(_imagePreviewPath);
+    return Share.file(fileBaseName, fileBaseName,
+        File(_imagePreviewPath).readAsBytesSync(), 'image/png');
   }
 
   void openLibrary() {
@@ -326,6 +348,4 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
       print(e);
     }
   }
-
-  void shareImage(String filePath) {}
 }
