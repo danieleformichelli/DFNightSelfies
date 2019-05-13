@@ -44,7 +44,8 @@ class DfNightSelfiesMain extends StatefulWidget {
   _DfNightSelfiesMainState createState() => _DfNightSelfiesMainState();
 }
 
-class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
+class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
+    with WidgetsBindingObserver {
   var photoOrVideo = true;
   var timer = 0;
   var remainingTimer = 0;
@@ -57,17 +58,35 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
   String _mediaPreviewPath;
   var _pictureToScreenRatio = 3;
   var _backgroundColor = Colors.white;
+  AppLifecycleState _lastLifecyleState;
 
   @override
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
     _initializeCameraControllerFuture = initializeCameraController();
     Screen.setBrightness(1);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      if (_lastLifecyleState != AppLifecycleState.resumed &&
+          state == AppLifecycleState.resumed) {
+        _initializeCameraControllerFuture = initializeCameraController();
+      } else if (_lastLifecyleState == AppLifecycleState.resumed &&
+          state != AppLifecycleState.resumed) {
+        _cameraController?.dispose();
+        _initializeCameraControllerFuture = null;
+      }
+      _lastLifecyleState = state;
+    });
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cameraController?.dispose();
     _videoPlayerController?.dispose();
 
@@ -128,6 +147,10 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
         return widget;
       }
     } else {
+      if (_initializeCameraControllerFuture == null) {
+        return CircularProgressIndicator();
+      }
+
       return FutureBuilder<void>(
         future: _initializeCameraControllerFuture,
         builder: (context, snapshot) {
