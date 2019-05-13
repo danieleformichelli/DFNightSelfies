@@ -221,7 +221,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.save),
             onPressed: () async {
-              await saveMedia();
+              await saveAndDeleteMedia();
               restartPreview();
             },
           ),
@@ -235,7 +235,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.share),
             onPressed: () async {
-              var fileName = await saveMedia();
+              var fileName = await saveAndDeleteMedia();
               await shareMedia(fileName);
               restartPreview();
             },
@@ -272,10 +272,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   void restartPreview() {
     setState(() {
-      _videoPlayerController?.pause();
-      _videoPlayerController?.dispose();
-      _videoPlayerController = null;
-
       _imagePreview = null;
       _mediaPreviewPath = null;
       state = DfNightSelfiesState.CAMERA_PREVIEW;
@@ -314,7 +310,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     });
   }
 
-  Future<String> saveMedia() async {
+  Future<String> saveAndDeleteMedia() async {
     var permission =
         await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
@@ -325,11 +321,15 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     await Directory(fileFolder).create(recursive: true);
     var filePath = join(fileFolder, basename(_mediaPreviewPath));
     File(_mediaPreviewPath).copySync(filePath);
-    File(_mediaPreviewPath).delete();
+    deleteMedia();
     return Future.value(filePath);
   }
 
   void deleteMedia() {
+    _videoPlayerController?.pause();
+    _videoPlayerController?.dispose();
+    _videoPlayerController = null;
+
     File(_mediaPreviewPath).delete();
     setState(() {
       state = DfNightSelfiesState.CAMERA_PREVIEW;
@@ -425,40 +425,41 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
 
-  startOrStopVideo() async {
-    switch (state) {
-      case DfNightSelfiesState.CAMERA_PREVIEW:
-        setState(() {
-          state = DfNightSelfiesState.RECORDING;
-        });
+  startVideo() async {
+    setState(() {
+      state = DfNightSelfiesState.RECORDING;
+    });
 
-        await _initializeCameraControllerFuture;
+    await _initializeCameraControllerFuture;
 
-        _mediaPreviewPath = join(
-          (await getTemporaryDirectory()).path,
-          'DFNightSelfies_${getDateTime()}.mp4',
-        );
+    _mediaPreviewPath = join(
+      (await getTemporaryDirectory()).path,
+      'DFNightSelfies_${getDateTime()}.mp4',
+    );
 
-        await _cameraController.prepareForVideoRecording();
-        await _cameraController.startVideoRecording(_mediaPreviewPath);
-        break;
+    await _cameraController.prepareForVideoRecording();
+    await _cameraController.startVideoRecording(_mediaPreviewPath);
+  }
 
-      case DfNightSelfiesState.RECORDING:
-        await _cameraController.stopVideoRecording();
-        _videoPlayerController =
-            VideoPlayerController.file(File(_mediaPreviewPath));
-        await _videoPlayerController.initialize();
-        setState(() {
-          state = DfNightSelfiesState.MEDIA_PREVIEW;
-        });
-        break;
-
-      default:
-        return;
-    }
+  stopVideo() async {
+    await _cameraController.stopVideoRecording();
+    _videoPlayerController =
+        VideoPlayerController.file(File(_mediaPreviewPath));
+    await _videoPlayerController.initialize();
+    setState(() {
+      state = DfNightSelfiesState.MEDIA_PREVIEW;
+    });
   }
 
   void startCountDownOrTake() {
+    if (state == DfNightSelfiesState.RECORDING) {
+      stopVideo();
+    }
+
+    if (state != DfNightSelfiesState.CAMERA_PREVIEW) {
+      return;
+    }
+
     if (timer == 0) {
       take();
     } else {
@@ -483,6 +484,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   void take() {
-    photoOrVideo ? takePhoto() : startOrStopVideo();
+    photoOrVideo ? takePhoto() : startVideo();
   }
 }
