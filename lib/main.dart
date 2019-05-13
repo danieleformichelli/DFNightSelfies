@@ -76,24 +76,36 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      child: Scaffold(
-        body: SafeArea(
-          child: getCameraPreviewOrMediaPreview(),
-        ),
-        backgroundColor: _backgroundColor,
-        bottomNavigationBar: BottomAppBar(
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: getButtons(),
+    return WillPopScope(
+      onWillPop: onBackButton,
+      child: GestureDetector(
+        child: Scaffold(
+          body: SafeArea(
+            child: getCameraPreviewOrMediaPreview(),
+          ),
+          backgroundColor: _backgroundColor,
+          bottomNavigationBar: BottomAppBar(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: getButtons(),
+            ),
           ),
         ),
+        onTap: () async {
+          startCountDownOrTake();
+        },
       ),
-      onTap: () async {
-        startCountDownOrTake();
-      },
     );
+  }
+
+  void onBackButton() {
+    if (state != DfNightSelfiesState.MEDIA_PREVIEW) {
+      return;
+    }
+
+    deleteMedia();
+    restartPreview();
   }
 
   Widget getCameraPreviewOrMediaPreview() {
@@ -125,31 +137,19 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
               switch (NativeDeviceOrientationReader.orientation(context)) {
                 case NativeDeviceOrientation.landscapeLeft:
                   turns = -1;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .width;
+                  referenceSize = MediaQuery.of(context).size.width;
                   break;
                 case NativeDeviceOrientation.landscapeRight:
                   turns = 1;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .width;
+                  referenceSize = MediaQuery.of(context).size.width;
                   break;
                 case NativeDeviceOrientation.portraitDown:
                   turns = 2;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .height;
+                  referenceSize = MediaQuery.of(context).size.height;
                   break;
                 default:
                   turns = 0;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .height;
+                  referenceSize = MediaQuery.of(context).size.height;
                   break;
               }
 
@@ -265,8 +265,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
     showDialog(
       context: context,
-      builder: (_) =>
-          Center(
+      builder: (_) => Center(
             child: Material(
               child: MaterialColorPicker(
                   allowShades: false,
@@ -293,7 +292,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
 
   Future<String> saveMedia() async {
     var permission =
-    await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+        await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
       return Future.error('Write storage permission not granted');
     }
@@ -445,9 +444,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
         Timer _timer;
         _timer = new Timer.periodic(
           Duration(seconds: 1),
-              (Timer timer) =>
-              setState(
-                    () {
+          (Timer timer) => setState(
+                () {
                   --remainingTimer;
                   if (remainingTimer <= 0) {
                     _timer.cancel();
