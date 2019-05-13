@@ -99,13 +99,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> {
     );
   }
 
-  void onBackButton() {
+  Future<bool> onBackButton() {
     if (state != DfNightSelfiesState.MEDIA_PREVIEW) {
-      return;
+      return Future.value(true);
     }
 
     deleteMedia();
     restartPreview();
+    return Future.value(false);
   }
 
   Widget getCameraPreviewOrMediaPreview() {
