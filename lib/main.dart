@@ -110,6 +110,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: getButtons(),
             ),
+            color: _backgroundColor,
           ),
         ),
         onTap: () async {
