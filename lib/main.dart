@@ -21,6 +21,7 @@ enum DfNightSelfiesState {
   INIT,
   CAMERA_PREVIEW,
   COUNTDOWN,
+  TAKING,
   RECORDING,
   MEDIA_PREVIEW
 }
@@ -237,8 +238,9 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           ),
         ];
 
-      case DfNightSelfiesState.CAMERA_PREVIEW:
       case DfNightSelfiesState.INIT:
+      case DfNightSelfiesState.CAMERA_PREVIEW:
+      case DfNightSelfiesState.TAKING:
         return <Widget>[
           IconButton(
             icon: Icon(Icons.colorize),
@@ -321,8 +323,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   void deleteMedia() {
     _videoPlayerController?.pause();
-    _videoPlayerController?.dispose();
-    _videoPlayerController = null;
 
     File(_mediaPreviewPath).delete();
     _mediaPreviewPath = null;
@@ -396,13 +396,11 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   takePhoto() async {
-    if (_state != DfNightSelfiesState.CAMERA_PREVIEW &&
-        _state != DfNightSelfiesState.COUNTDOWN) {
+    if (_state != DfNightSelfiesState.TAKING) {
       return;
     }
 
     try {
-      _state = DfNightSelfiesState.RECORDING;
       await _initializeCameraControllerFuture;
 
       final imagePath = join(
@@ -425,10 +423,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
 
   startVideo() async {
-    setState(() {
-      _state = DfNightSelfiesState.RECORDING;
-    });
-
     await _initializeCameraControllerFuture;
 
     _mediaPreviewPath = join(
@@ -438,10 +432,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     await _cameraController.prepareForVideoRecording();
     await _cameraController.startVideoRecording(_mediaPreviewPath);
+    setState(() {
+      _state = DfNightSelfiesState.RECORDING;
+    });
   }
 
   stopVideo() async {
     await _cameraController.stopVideoRecording();
+    _videoPlayerController?.dispose();
     _videoPlayerController =
         VideoPlayerController.file(File(_mediaPreviewPath));
     await _videoPlayerController.initialize();
@@ -483,6 +481,10 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   void take() {
+    setState(() {
+      _state = DfNightSelfiesState.TAKING;
+    });
+
     _photoOrVideo ? takePhoto() : startVideo();
   }
 }
