@@ -393,7 +393,9 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     // Next, you need to initialize the controller. This returns a Future
     await _cameraController.initialize();
-    _state = DfNightSelfiesState.CAMERA_PREVIEW;
+    if (_state == DfNightSelfiesState.INIT) {
+      _state = DfNightSelfiesState.CAMERA_PREVIEW;
+    }
   }
 
   takePhoto() async {
