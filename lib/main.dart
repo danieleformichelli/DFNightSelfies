@@ -190,7 +190,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
               );
 
               var stackChildren = List<Widget>();
-              stackChildren.add(cameraPreviewBox);
+              stackChildren.add(Center(child: cameraPreviewBox));
               if (_remainingTimer != 0) {
                 stackChildren.add(
                   Center(
