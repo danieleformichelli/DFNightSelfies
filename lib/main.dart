@@ -60,6 +60,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   var _pictureToScreenRatio = 3;
   var _backgroundColor = Colors.white;
   AppLifecycleState _lastLifecyleState;
+  Timer _countdownTimer;
 
   @override
   void initState() {
@@ -191,7 +192,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
               var stackChildren = List<Widget>();
               stackChildren.add(Center(child: cameraPreviewBox));
-              if (_remainingTimer != 0) {
+              if (_state == DfNightSelfiesState.COUNTDOWN) {
                 stackChildren.add(
                   Center(
                     child: Text(
@@ -263,9 +264,26 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           ),
         ];
 
-      default:
-        return List();
+      case DfNightSelfiesState.COUNTDOWN:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.cancel),
+            onPressed: cancelCountDown,
+          )
+        ];
+        break;
+
+      case DfNightSelfiesState.RECORDING:
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.fiber_manual_record),
+            color: Colors.red,
+            onPressed: stopVideo,
+          )
+        ];
     }
+
+    return List();
   }
 
   void restartPreview() {
@@ -466,14 +484,18 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       setState(() {
         _remainingTimer = _timer;
         _state = DfNightSelfiesState.COUNTDOWN;
-        Timer localTimer;
-        localTimer = new Timer.periodic(
+        _countdownTimer = new Timer.periodic(
           Duration(seconds: 1),
           (Timer timer) => setState(
                 () {
+                  if (_countdownTimer == null) {
+                    // canceled
+                    return;
+                  }
+
                   --_remainingTimer;
                   if (_remainingTimer <= 0) {
-                    localTimer.cancel();
+                    _countdownTimer.cancel();
                     take();
                   }
                 },
@@ -489,5 +511,11 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     });
 
     _photoOrVideo ? takePhoto() : startVideo();
+  }
+
+  void cancelCountDown() {
+    _countdownTimer.cancel();
+    _countdownTimer = null;
+    restartPreview();
   }
 }
