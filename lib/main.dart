@@ -122,13 +122,19 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   Future<bool> onBackButton() {
-    if (_state != DfNightSelfiesState.MEDIA_PREVIEW) {
-      return Future.value(true);
-    }
+    switch (_state) {
+      case DfNightSelfiesState.MEDIA_PREVIEW:
+        deleteMedia();
+        restartPreview();
+        return Future.value(false);
 
-    deleteMedia();
-    restartPreview();
-    return Future.value(false);
+      case DfNightSelfiesState.RECORDING:
+        stopVideo();
+        return Future.value(false);
+
+      default:
+        return Future.value(true);
+    }
   }
 
   Widget getCameraPreviewOrMediaPreview() {
@@ -451,6 +457,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       'DFNightSelfies_${getDateTime()}.mp4',
     );
 
+    await _cameraController.prepareForVideoRecording();
     await _cameraController.prepareForVideoRecording();
     await _cameraController.startVideoRecording(_mediaPreviewPath);
     setState(() {

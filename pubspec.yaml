@@ -11,18 +11,17 @@ dependencies:
     sdk: flutter
   album_saver:
   camera:
+  cupertino_icons: ^0.1.2
   esys_flutter_share:
   flutter_launcher_icons:
   flutter_material_color_picker:
   intl:
+  native_device_orientation:
   path_provider:
   path:
   permission_handler:
   screen:
   video_player:
-
-  cupertino_icons: ^0.1.2
-  native_device_orientation:
 
 dev_dependencies:
   flutter_test:
