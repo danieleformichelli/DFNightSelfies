@@ -186,7 +186,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
               var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
               var cameraPreviewWidth =
-                  cameraPreviewHeight * _cameraController.value.aspectRatio;
+                  cameraPreviewHeight / _cameraController.value.aspectRatio;
               var cameraPreviewBox = RotatedBox(
                 quarterTurns: turns,
                 child: Container(
