@@ -16,15 +16,15 @@ dependencies:
       ref: 310a8f06c4981121a5553b0f6f3a8cdf475b8af1
       path: packages/camera
   cupertino_icons: ^0.1.2
-  esys_flutter_share:
-  flutter_launcher_icons:
-  flutter_material_color_picker:
-  intl:
-  native_device_orientation:
-  path_provider:
-  path:
-  permission_handler:
-  screen:
+  esys_flutter_share: 1.0.1
+  flutter_launcher_icons: 0.7.0
+  flutter_material_color_picker: 1.0.0
+  intl: 0.15.8
+  native_device_orientation: 0.2.0
+  path: 1.6.2
+  path_provider: 0.5.0+1
+  permission_handler: 3.0.1
+  screen: 0.0.5
   video_player:
     git:
       url: git://github.com/tengio/plugins.git
