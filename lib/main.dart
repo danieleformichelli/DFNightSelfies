@@ -13,6 +13,7 @@ import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screen/screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 void main() => runApp(DfNightSelfiesApp());
@@ -47,9 +48,18 @@ class DfNightSelfiesMain extends StatefulWidget {
 
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     with WidgetsBindingObserver {
+  static final photoOrVideoKey = "PhotoOrVideo";
   var _photoOrVideo = true;
+
+  static final timerKey = "Timer";
   var _timer = 0;
   var _remainingTimer = 0;
+
+  static final pictureToScreenRatioKey = "PictureToScreenRatio";
+  var _pictureToScreenRatio = 3;
+
+  static final backgroundColorKey = "BackgroundColor";
+  var _backgroundColor = Colors.white;
 
   var _state = DfNightSelfiesState.INIT;
   CameraController _cameraController;
@@ -57,15 +67,15 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   Future _initializeCameraControllerFuture;
   Widget _imagePreview;
   String _mediaPreviewPath;
-  var _pictureToScreenRatio = 3;
-  var _backgroundColor = Colors.white;
   AppLifecycleState _lastLifecyleState;
   Timer _countdownTimer;
+  SharedPreferences _preferences;
 
   @override
   void initState() {
     super.initState();
 
+    loadSettings();
     WidgetsBinding.instance.addObserver(this);
     _initializeCameraControllerFuture = initializeCameraController();
     Screen.setBrightness(1);
@@ -168,19 +178,31 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
               switch (NativeDeviceOrientationReader.orientation(context)) {
                 case NativeDeviceOrientation.landscapeLeft:
                   turns = -1;
-                  referenceSize = MediaQuery.of(context).size.width;
+                  referenceSize = MediaQuery
+                      .of(context)
+                      .size
+                      .width;
                   break;
                 case NativeDeviceOrientation.landscapeRight:
                   turns = 1;
-                  referenceSize = MediaQuery.of(context).size.width;
+                  referenceSize = MediaQuery
+                      .of(context)
+                      .size
+                      .width;
                   break;
                 case NativeDeviceOrientation.portraitDown:
                   turns = 2;
-                  referenceSize = MediaQuery.of(context).size.height;
+                  referenceSize = MediaQuery
+                      .of(context)
+                      .size
+                      .height;
                   break;
                 default:
                   turns = 0;
-                  referenceSize = MediaQuery.of(context).size.height;
+                  referenceSize = MediaQuery
+                      .of(context)
+                      .size
+                      .height;
                   break;
               }
 
@@ -307,7 +329,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     showDialog(
       context: context,
-      builder: (_) => Center(
+      builder: (_) =>
+          Center(
             child: Material(
               child: MaterialColorPicker(
                   allowShades: false,
@@ -315,6 +338,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
                   onMainColorChange: (Color color) {
                     setState(() {
                       _backgroundColor = color;
+                      _preferences.setInt(
+                          backgroundColorKey, _backgroundColor.value);
                     });
                   },
                   selectedColor: _backgroundColor),
@@ -329,12 +354,13 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       if (_pictureToScreenRatio > 5) {
         _pictureToScreenRatio = 2;
       }
+      _preferences.setInt(pictureToScreenRatioKey, _pictureToScreenRatio);
     });
   }
 
   Future<String> saveMedia() async {
     var permission =
-        await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+    await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
       return Future.error('Write storage permission not granted');
     }
@@ -373,6 +399,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     setState(() {
       _photoOrVideo = !_photoOrVideo;
+      _preferences.setBool(photoOrVideoKey, _photoOrVideo);
     });
   }
 
@@ -393,6 +420,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           _timer = 0;
           break;
       }
+      _preferences.setInt(timerKey, _timer);
     });
   }
 
@@ -493,8 +521,9 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
         _state = DfNightSelfiesState.COUNTDOWN;
         _countdownTimer = new Timer.periodic(
           Duration(seconds: 1),
-          (Timer timer) => setState(
-                () {
+              (Timer timer) =>
+              setState(
+                    () {
                   if (_countdownTimer == null) {
                     // canceled
                     return;
@@ -524,5 +553,19 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     _countdownTimer.cancel();
     _countdownTimer = null;
     restartPreview();
+  }
+
+  void loadSettings() async {
+    _preferences = await SharedPreferences.getInstance();
+
+    setState(() {
+      _photoOrVideo = _preferences.getBool(photoOrVideoKey) ?? _photoOrVideo;
+      _timer = _preferences.getInt(timerKey) ?? _timer;
+      _pictureToScreenRatio =
+          _preferences.getInt(pictureToScreenRatioKey) ?? _pictureToScreenRatio;
+      var backgroundColorValue =
+          _preferences.getInt(backgroundColorKey) ?? _backgroundColor.value;
+      _backgroundColor = Color(backgroundColorValue);
+    });
   }
 }

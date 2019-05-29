@@ -25,6 +25,7 @@ dependencies:
   path_provider: 0.5.0+1
   permission_handler: 3.0.1
   screen: 0.0.5
+  shared_preferences: 0.5.2+1
   video_player:
     git:
       url: git://github.com/tengio/plugins.git
