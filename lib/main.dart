@@ -149,96 +149,92 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   Widget getCameraPreviewOrMediaPreview() {
     if (_state == DfNightSelfiesState.MEDIA_PREVIEW) {
-      if (_imagePreview != null) {
-        // picture
-        return _imagePreview;
-      } else {
-        // video
-        var widget = AspectRatio(
-          aspectRatio: _videoPlayerController.value.aspectRatio,
-          // Use the VideoPlayer widget to display the video
-          child: VideoPlayer(_videoPlayerController),
-        );
-        _videoPlayerController.setLooping(true);
-        _videoPlayerController.play();
-        return widget;
-      }
+      return getMediaPreview();
     } else {
-      if (_initializeCameraControllerFuture == null) {
-        return CircularProgressIndicator();
-      }
-
-      return FutureBuilder<void>(
-        future: _initializeCameraControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return NativeDeviceOrientationReader(builder: (context) {
-              int turns;
-              double referenceSize;
-              switch (NativeDeviceOrientationReader.orientation(context)) {
-                case NativeDeviceOrientation.landscapeLeft:
-                  turns = -1;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .width;
-                  break;
-                case NativeDeviceOrientation.landscapeRight:
-                  turns = 1;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .width;
-                  break;
-                case NativeDeviceOrientation.portraitDown:
-                  turns = 2;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .height;
-                  break;
-                default:
-                  turns = 0;
-                  referenceSize = MediaQuery
-                      .of(context)
-                      .size
-                      .height;
-                  break;
-              }
-
-              var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
-              var cameraPreviewWidth =
-                  cameraPreviewHeight / _cameraController.value.aspectRatio;
-              var cameraPreviewBox = RotatedBox(
-                quarterTurns: turns,
-                child: Container(
-                  child: CameraPreview(_cameraController),
-                  height: cameraPreviewHeight,
-                  width: cameraPreviewWidth,
-                ),
-              );
-
-              var stackChildren = List<Widget>();
-              stackChildren.add(Center(child: cameraPreviewBox));
-              if (_state == DfNightSelfiesState.COUNTDOWN) {
-                stackChildren.add(
-                  Center(
-                    child: Text(
-                      '$_remainingTimer',
-                      style: TextStyle(fontSize: 64, color: Colors.white30),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                );
-              }
-              return Stack(children: stackChildren);
-            });
-          } else {
-            return CircularProgressIndicator();
-          }
-        },
-      );
+      return getCameraPreview();
     }
+  }
+
+  Widget getMediaPreview() {
+    if (_imagePreview != null) {
+      // picture
+      return _imagePreview;
+    } else {
+      // video
+      var widget = AspectRatio(
+        aspectRatio: _videoPlayerController.value.aspectRatio,
+        // Use the VideoPlayer widget to display the video
+        child: VideoPlayer(_videoPlayerController),
+      );
+      _videoPlayerController.setLooping(true);
+      _videoPlayerController.play();
+      return widget;
+    }
+  }
+
+  StatefulWidget getCameraPreview() {
+    if (_initializeCameraControllerFuture == null) {
+      return CircularProgressIndicator();
+    }
+
+    return FutureBuilder<void>(
+      future: _initializeCameraControllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return CircularProgressIndicator();
+        }
+
+        return NativeDeviceOrientationReader(builder: (context) {
+          int turns;
+          double referenceSize;
+          switch (NativeDeviceOrientationReader.orientation(context)) {
+            case NativeDeviceOrientation.landscapeLeft:
+              turns = -1;
+              referenceSize = MediaQuery.of(context).size.width;
+              break;
+            case NativeDeviceOrientation.landscapeRight:
+              turns = 1;
+              referenceSize = MediaQuery.of(context).size.width;
+              break;
+            case NativeDeviceOrientation.portraitDown:
+              turns = 2;
+              referenceSize = MediaQuery.of(context).size.height;
+              break;
+            default:
+              turns = 0;
+              referenceSize = MediaQuery.of(context).size.height;
+              break;
+          }
+
+          var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
+          var cameraPreviewWidth =
+              cameraPreviewHeight / _cameraController.value.aspectRatio;
+          var cameraPreviewBox = RotatedBox(
+            quarterTurns: turns,
+            child: Container(
+              child: CameraPreview(_cameraController),
+              height: cameraPreviewHeight,
+              width: cameraPreviewWidth,
+            ),
+          );
+
+          var stackChildren = List<Widget>();
+          stackChildren.add(Center(child: cameraPreviewBox));
+          if (_state == DfNightSelfiesState.COUNTDOWN) {
+            stackChildren.add(
+              Center(
+                child: Text(
+                  '$_remainingTimer',
+                  style: TextStyle(fontSize: 64, color: Colors.white30),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+          return Stack(children: stackChildren);
+        });
+      },
+    );
   }
 
   List<Widget> getButtons() {
@@ -329,8 +325,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     showDialog(
       context: context,
-      builder: (_) =>
-          Center(
+      builder: (_) => Center(
             child: Material(
               child: MaterialColorPicker(
                   allowShades: false,
@@ -360,7 +355,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   Future<String> saveMedia() async {
     var permission =
-    await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+        await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
       return Future.error('Write storage permission not granted');
     }
@@ -521,9 +516,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
         _state = DfNightSelfiesState.COUNTDOWN;
         _countdownTimer = new Timer.periodic(
           Duration(seconds: 1),
-              (Timer timer) =>
-              setState(
-                    () {
+          (Timer timer) => setState(
+                () {
                   if (_countdownTimer == null) {
                     // canceled
                     return;
