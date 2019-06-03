@@ -431,6 +431,15 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   Future initializeCameraController() async {
+    var permission =
+    await PermissionHandler().requestPermissions([PermissionGroup.camera, PermissionGroup.microphone]);
+    if (permission[PermissionGroup.camera] != PermissionStatus.granted) {
+      return Future.error('Camera permission not granted');
+    }
+    if (permission[PermissionGroup.microphone] != PermissionStatus.granted) {
+      return Future.error('Microphone permission not granted');
+    }
+
     // In order to display the current output from the Camera, you need to
     // create a CameraController.
     _cameraController = CameraController(
