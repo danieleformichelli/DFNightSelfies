@@ -206,6 +206,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
               break;
           }
 
+
           var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
           var cameraPreviewWidth =
               cameraPreviewHeight / _cameraController.value.aspectRatio;
