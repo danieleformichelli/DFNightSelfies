@@ -142,7 +142,6 @@
 				58A9BEB26551E706BACFABF3 /* Pods-Runner.release.xcconfig */,
 				F39BA2E917A68F8F1AE47A3B /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -191,6 +190,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
