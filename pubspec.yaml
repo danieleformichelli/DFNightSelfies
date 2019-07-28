@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  album_saver:
   camera:
     git:
       url: git://github.com/tengio/plugins.git
@@ -19,6 +18,7 @@ dependencies:
   esys_flutter_share: 1.0.2
   flutter_launcher_icons: 0.7.2+1
   flutter_material_color_picker: 1.0.2
+  image_gallery_saver: 1.1.0
   intl: 0.15.8
   native_device_orientation: 0.2.0
   path: 1.6.2

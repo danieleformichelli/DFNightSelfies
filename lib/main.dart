@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:album_saver/album_saver.dart';
 import 'package:camera/camera.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screen/screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 void main() => runApp(DfNightSelfiesApp());
 
@@ -245,7 +245,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.save),
             onPressed: () async {
-              await saveMedia();
+              saveMedia();
               deleteMedia();
               restartPreview();
             },
@@ -354,18 +354,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     });
   }
 
-  Future<String> saveMedia() async {
-    var permission =
-        await PermissionHandler().requestPermissions([PermissionGroup.storage]);
-    if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
-      return Future.error('Write storage permission not granted');
-    }
-
-    var fileFolder = join(await AlbumSaver.getDcimPath(), 'DFNightSelfies');
-    await Directory(fileFolder).create(recursive: true);
-    var filePath = join(fileFolder, basename(_mediaPreviewPath));
-    File(_mediaPreviewPath).copySync(filePath);
-    return Future.value(filePath);
+  void saveMedia() async {
+    await ImageGallerySaver.save(new File(_mediaPreviewPath).readAsBytesSync());
   }
 
   void deleteMedia() {
