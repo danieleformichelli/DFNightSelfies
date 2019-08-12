@@ -435,7 +435,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     // create a CameraController.
     _cameraController = CameraController(
       await getFrontCamera(),
-      ResolutionPreset.high,
+      ResolutionPreset.veryHigh,
     );
 
     // Next, you need to initialize the controller. This returns a Future
