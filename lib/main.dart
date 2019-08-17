@@ -134,7 +134,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   Future<bool> onBackButton() {
     switch (_state) {
       case DfNightSelfiesState.MEDIA_PREVIEW:
-        deleteMedia();
+        deleteTemporaryMedia();
         restartPreview();
         return Future.value(false);
 
@@ -206,7 +206,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
               break;
           }
 
-
           var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
           var cameraPreviewWidth =
               cameraPreviewHeight / _cameraController.value.aspectRatio;
@@ -245,15 +244,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.save),
             onPressed: () async {
-              saveMedia();
-              deleteMedia();
+              saveMedia().then((path) => deleteTemporaryMedia());
               restartPreview();
             },
           ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              deleteMedia();
+              deleteTemporaryMedia();
               restartPreview();
             },
           ),
@@ -327,20 +325,20 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     showDialog(
       context: context,
       builder: (_) => Center(
-            child: Material(
-              child: MaterialColorPicker(
-                  allowShades: false,
-                  colors: colors,
-                  onMainColorChange: (Color color) {
-                    setState(() {
-                      _backgroundColor = color;
-                      _preferences.setInt(
-                          backgroundColorKey, _backgroundColor.value);
-                    });
-                  },
-                  selectedColor: _backgroundColor),
-            ),
-          ),
+        child: Material(
+          child: MaterialColorPicker(
+              allowShades: false,
+              colors: colors,
+              onMainColorChange: (Color color) {
+                setState(() {
+                  _backgroundColor = color;
+                  _preferences.setInt(
+                      backgroundColorKey, _backgroundColor.value);
+                });
+              },
+              selectedColor: _backgroundColor),
+        ),
+      ),
     );
   }
 
@@ -354,11 +352,24 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     });
   }
 
-  void saveMedia() async {
-    await ImageGallerySaver.save(new File(_mediaPreviewPath).readAsBytesSync());
+  List<int> imageBytes() {
+    return new File(_mediaPreviewPath).readAsBytesSync();
   }
 
-  void deleteMedia() {
+  Future saveMedia() async {
+    if (Platform.isAndroid) {
+      var permission = await PermissionHandler()
+          .requestPermissions([PermissionGroup.storage]);
+      if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
+        return Future.error('Write storage permission not granted');
+      }
+    }
+
+    return ImageGallerySaver.save(
+        new File(_mediaPreviewPath).readAsBytesSync());
+  }
+
+  void deleteTemporaryMedia() {
     _videoPlayerController?.pause();
 
     File(_mediaPreviewPath).delete();
@@ -371,10 +382,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   Future shareMedia() async {
     var fileBaseName = basename(_mediaPreviewPath);
-    return Share.file(
-        fileBaseName,
-        fileBaseName,
-        File(_mediaPreviewPath).readAsBytesSync(),
+    return Share.file(fileBaseName, fileBaseName, imageBytes(),
         _photoOrVideo ? 'image/png' : 'video/mp4');
   }
 
@@ -422,8 +430,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   Future initializeCameraController() async {
-    var permission =
-    await PermissionHandler().requestPermissions([PermissionGroup.camera, PermissionGroup.microphone]);
+    var permission = await PermissionHandler().requestPermissions(
+        [PermissionGroup.camera, PermissionGroup.microphone]);
     if (permission[PermissionGroup.camera] != PermissionStatus.granted) {
       return Future.error('Camera permission not granted');
     }
@@ -517,19 +525,19 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
         _countdownTimer = new Timer.periodic(
           Duration(seconds: 1),
           (Timer timer) => setState(
-                () {
-                  if (_countdownTimer == null) {
-                    // canceled
-                    return;
-                  }
+            () {
+              if (_countdownTimer == null) {
+                // canceled
+                return;
+              }
 
-                  --_remainingTimer;
-                  if (_remainingTimer <= 0) {
-                    _countdownTimer.cancel();
-                    take();
-                  }
-                },
-              ),
+              --_remainingTimer;
+              if (_remainingTimer <= 0) {
+                _countdownTimer.cancel();
+                take();
+              }
+            },
+          ),
         );
       });
     }
