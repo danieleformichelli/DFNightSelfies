@@ -244,7 +244,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.save),
             onPressed: () async {
-              saveMedia().then((path) => deleteTemporaryMedia());
+              saveMedia(_mediaPreviewPath).then((path) => deleteTemporaryMedia());
               restartPreview();
             },
           ),
@@ -356,7 +356,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     return new File(_mediaPreviewPath).readAsBytesSync();
   }
 
-  Future saveMedia() async {
+  Future saveMedia(String mediaPath) async {
     if (Platform.isAndroid) {
       var permission = await PermissionHandler()
           .requestPermissions([PermissionGroup.storage]);
@@ -366,7 +366,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     }
 
     return ImageGallerySaver.save(
-        new File(_mediaPreviewPath).readAsBytesSync());
+        new File(mediaPath).readAsBytesSync());
   }
 
   void deleteTemporaryMedia() {
