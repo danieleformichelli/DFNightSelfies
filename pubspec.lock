@@ -32,12 +32,10 @@ packages:
   camera:
     dependency: "direct main"
     description:
-      path: "packages/camera"
-      ref: "310a8f06c4981121a5553b0f6f3a8cdf475b8af1"
-      resolved-ref: "310a8f06c4981121a5553b0f6f3a8cdf475b8af1"
-      url: "git://github.com/tengio/plugins.git"
-    source: git
-    version: "0.4.4"
+      name: camera
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.4"
   charcode:
     dependency: transitive
     description:
@@ -65,7 +63,7 @@ packages:
       name: crypto
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.1+1"
+    version: "2.1.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -266,12 +264,10 @@ packages:
   video_player:
     dependency: "direct main"
     description:
-      path: "packages/video_player"
-      ref: "310a8f06c4981121a5553b0f6f3a8cdf475b8af1"
-      resolved-ref: "310a8f06c4981121a5553b0f6f3a8cdf475b8af1"
-      url: "git://github.com/tengio/plugins.git"
-    source: git
-    version: "0.10.0+5"
+      name: video_player
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.1+6"
   xml:
     dependency: transitive
     description:

@@ -9,11 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera:
-    git:
-      url: git://github.com/tengio/plugins.git
-      ref: 310a8f06c4981121a5553b0f6f3a8cdf475b8af1
-      path: packages/camera
+  camera: 0.5.4
   cupertino_icons: ^0.1.2
   esys_flutter_share: 1.0.2
   flutter_launcher_icons: 0.7.2+1
@@ -26,11 +22,7 @@ dependencies:
   permission_handler: 3.2.1+1
   screen: 0.0.5
   shared_preferences: 0.5.3+4
-  video_player:
-    git:
-      url: git://github.com/tengio/plugins.git
-      ref: 310a8f06c4981121a5553b0f6f3a8cdf475b8af1
-      path: packages/video_player
+  video_player: 0.10.1+6
 
 dev_dependencies:
   flutter_test:
