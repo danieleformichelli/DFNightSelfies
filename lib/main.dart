@@ -14,7 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screen/screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 void main() => runApp(DfNightSelfiesApp());
 
@@ -366,8 +366,11 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       }
     }
 
-    return ImageGallerySaver.save(
-        new File(mediaPath).readAsBytesSync());
+    if (_photoOrVideo) {
+      GallerySaver.saveImage(mediaPath);
+    } else {
+      GallerySaver.saveVideo(mediaPath);
+    }
   }
 
   void pauseVideo() {
