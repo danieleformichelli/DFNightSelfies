@@ -15,6 +15,7 @@ import 'package:screen/screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:flutter_photokit/flutter_photokit.dart';
 
 void main() => runApp(DfNightSelfiesApp());
 
@@ -245,7 +246,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
             icon: Icon(Icons.save),
             onPressed: () async {
               pauseVideo();
-              saveMedia(_mediaPreviewPath).then((path) => deleteTemporaryMedia());
+              await saveMedia(_mediaPreviewPath);
               restartPreview();
             },
           ),
@@ -364,12 +365,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
         return Future.error('Write storage permission not granted');
       }
-    }
 
-    if (_photoOrVideo) {
-      GallerySaver.saveImage(mediaPath);
+      if (_photoOrVideo) {
+        GallerySaver.saveImage(mediaPath);
+      } else {
+        GallerySaver.saveVideo(mediaPath);
+      }
     } else {
-      GallerySaver.saveVideo(mediaPath);
+      FlutterPhotokit.saveToCameraRoll(filePath: mediaPath);
     }
   }
 
