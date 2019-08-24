@@ -489,7 +489,6 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     );
 
     await _cameraController.prepareForVideoRecording();
-    await _cameraController.prepareForVideoRecording();
     await _cameraController.startVideoRecording(_mediaPreviewPath);
     setState(() {
       _state = DfNightSelfiesState.RECORDING;
