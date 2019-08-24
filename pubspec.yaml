@@ -22,7 +22,7 @@ dependencies:
   permission_handler: 3.2.1+1
   screen: 0.0.5
   shared_preferences: 0.5.3+4
-  video_player: 0.10.1+6
+  video_player: 0.10.2
 
 dev_dependencies:
   flutter_test:
