@@ -244,6 +244,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.save),
             onPressed: () async {
+              pauseVideo();
               saveMedia(_mediaPreviewPath).then((path) => deleteTemporaryMedia());
               restartPreview();
             },
@@ -369,8 +370,12 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
         new File(mediaPath).readAsBytesSync());
   }
 
-  void deleteTemporaryMedia() {
+  void pauseVideo() {
     _videoPlayerController?.pause();
+  }
+
+  void deleteTemporaryMedia() {
+    pauseVideo();
 
     File(_mediaPreviewPath).delete();
     _mediaPreviewPath = null;
