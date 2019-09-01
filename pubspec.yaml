@@ -12,7 +12,6 @@ dependencies:
   camera:
   cupertino_icons:
   esys_flutter_share:
-  flutter_launcher_icons:
   flutter_material_color_picker:
   flutter_photokit:
   gallery_saver:
@@ -26,6 +25,7 @@ dependencies:
   video_player:
 
 dev_dependencies:
+  flutter_launcher_icons:
   flutter_test:
     sdk: flutter
 
@@ -37,4 +37,5 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "images/launcher.png"
+  image_path_android: "images/launcher.png"
+  image_path_ios: "images/launcher_full.png"
