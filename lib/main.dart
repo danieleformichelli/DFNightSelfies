@@ -372,6 +372,12 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
         GallerySaver.saveVideo(mediaPath);
       }
     } else {
+      var permission = await PermissionHandler()
+          .requestPermissions([PermissionGroup.photos]);
+      if (permission[PermissionGroup.photos] != PermissionStatus.granted) {
+        return Future.error('Photo permission not granted');
+      }
+
       FlutterPhotokit.saveToCameraRoll(filePath: mediaPath);
     }
   }

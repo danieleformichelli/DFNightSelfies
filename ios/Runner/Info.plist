@@ -25,7 +25,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app uses photo library to save selfies</string>
+	<string>Enable DF Night Selfies to access your camera roll to save selfies</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app uses the camera to take selfies</string>
 	<key>NSMicrophoneUsageDescription</key>

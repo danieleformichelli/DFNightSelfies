@@ -12,7 +12,7 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - "permission_handler (3.2.1+1)":
+  - permission_handler (3.2.2):
     - Flutter
   - screen (0.0.1):
     - Flutter
@@ -66,7 +66,7 @@ SPEC CHECKSUMS:
   gallery_saver: 9fc173c9f4fcc48af53b2a9ebea1b643255be542
   native_device_orientation: e24d00be281de72996640885d80e706142707660
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
-  permission_handler: 6a1b2f94f866da8bd19fa67f3c8f4b9f38580efb
+  permission_handler: d59f41439f5bc6c4d1005f3355e98f05ddc68ece
   screen: abd91ca7bf3426e1cc3646d27e9b2358d6bf07b0
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
   video_player: 3964090a33353060ed7f58aa6427c7b4b208ec21
