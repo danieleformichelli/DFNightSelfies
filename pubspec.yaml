@@ -9,21 +9,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera: 0.5.4
-  cupertino_icons: ^0.1.2
-  esys_flutter_share: 1.0.2
-  flutter_launcher_icons: 0.7.2+1
-  flutter_material_color_picker: 1.0.2
+  camera:
+  cupertino_icons:
+  esys_flutter_share:
+  flutter_launcher_icons:
+  flutter_material_color_picker:
   flutter_photokit:
-  gallery_saver: 1.0.1
-  intl: 0.15.8
-  native_device_orientation: 0.2.0
-  path: 1.6.2
-  path_provider: 1.2.0
-  permission_handler: 3.2.1+1
-  screen: 0.0.5
-  shared_preferences: 0.5.3+4
-  video_player: 0.10.2
+  gallery_saver:
+  intl:
+  native_device_orientation:
+  path:
+  path_provider:
+  permission_handler:
+  screen:
+  shared_preferences:
+  video_player:
 
 dev_dependencies:
   flutter_test:
