@@ -1,21 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:camera/camera.dart';
-import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:dfnightselfies/camera_manager.dart';
+import 'package:dfnightselfies/countdown_manager.dart';
+import 'package:dfnightselfies/export_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
-import 'package:path/path.dart' show join;
-import 'package:path/path.dart' show basename;
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:screen/screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:flutter_photokit/flutter_photokit.dart';
 
 void main() => runApp(DfNightSelfiesApp());
 
@@ -32,8 +26,8 @@ class DfNightSelfiesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DF Night Selfies',
-      home: DfNightSelfiesMain(title: 'DF Night Selfies'),
+        title: 'DF Night Selfies',
+        home: DfNightSelfiesMain(title: 'DF Night Selfies'),
     );
   }
 }
@@ -49,28 +43,18 @@ class DfNightSelfiesMain extends StatefulWidget {
 
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     with WidgetsBindingObserver {
-  static final photoOrVideoKey = "PhotoOrVideo";
-  var _photoOrVideo = true;
-
-  static final timerKey = "Timer";
-  var _timer = 0;
-  var _remainingTimer = 0;
-
-  static final pictureToScreenRatioKey = "PictureToScreenRatio";
-  var _pictureToScreenRatio = 3;
 
   static final backgroundColorKey = "BackgroundColor";
   var _backgroundColor = Colors.white;
 
   var _state = DfNightSelfiesState.INIT;
-  CameraController _cameraController;
   VideoPlayerController _videoPlayerController;
-  Future _initializeCameraControllerFuture;
   Widget _imagePreview;
-  String _mediaPreviewPath;
-  AppLifecycleState _lastLifecyleState;
-  Timer _countdownTimer;
+  AppLifecycleState _lastLifecycleState;
   SharedPreferences _preferences;
+  CameraManager _cameraManager = CameraManager();
+  ExportManager _exportManager = ExportManager();
+  CountdownManager _countdownManager = CountdownManager();
 
   @override
   void initState() {
@@ -78,29 +62,36 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     loadSettings();
     WidgetsBinding.instance.addObserver(this);
-    _initializeCameraControllerFuture = initializeCameraController();
+    initializeCamera();
     Screen.setBrightness(1);
+  }
+
+  void initializeCamera() {
+    _cameraManager.init().then((_) {
+      if (_state == DfNightSelfiesState.INIT) {
+        _state = DfNightSelfiesState.CAMERA_PREVIEW;
+      }
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
-      if (_lastLifecyleState != AppLifecycleState.resumed &&
+      if (_lastLifecycleState != AppLifecycleState.resumed &&
           state == AppLifecycleState.resumed) {
-        _initializeCameraControllerFuture = initializeCameraController();
-      } else if (_lastLifecyleState == AppLifecycleState.resumed &&
+        initializeCamera();
+      } else if (_lastLifecycleState == AppLifecycleState.resumed &&
           state != AppLifecycleState.resumed) {
-        _cameraController?.dispose();
-        _initializeCameraControllerFuture = null;
+        _cameraManager.dispose();
       }
-      _lastLifecyleState = state;
+      _lastLifecycleState = state;
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _cameraController?.dispose();
+    _cameraManager.dispose();
     _videoPlayerController?.dispose();
 
     super.dispose();
@@ -135,12 +126,12 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   Future<bool> onBackButton() {
     switch (_state) {
       case DfNightSelfiesState.MEDIA_PREVIEW:
-        deleteTemporaryMedia();
+        deleteTemporaryMediaAndRestartPreview();
         restartPreview();
         return Future.value(false);
 
       case DfNightSelfiesState.RECORDING:
-        stopVideo();
+        stopVideoRecording();
         return Future.value(false);
 
       default:
@@ -174,61 +165,25 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   }
 
   StatefulWidget getCameraPreview() {
-    if (_initializeCameraControllerFuture == null) {
+    if (_cameraManager.initFuture() == null) {
       return CircularProgressIndicator();
     }
 
     return FutureBuilder<void>(
-      future: _initializeCameraControllerFuture,
+      future: _cameraManager.initFuture(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return CircularProgressIndicator();
         }
 
         return NativeDeviceOrientationReader(builder: (context) {
-          int turns;
-          double referenceSize;
-          switch (NativeDeviceOrientationReader.orientation(context)) {
-            case NativeDeviceOrientation.landscapeLeft:
-              turns = -1;
-              referenceSize = MediaQuery.of(context).size.width;
-              break;
-            case NativeDeviceOrientation.landscapeRight:
-              turns = 1;
-              referenceSize = MediaQuery.of(context).size.width;
-              break;
-            case NativeDeviceOrientation.portraitDown:
-              turns = 2;
-              referenceSize = MediaQuery.of(context).size.height;
-              break;
-            default:
-              turns = 0;
-              referenceSize = MediaQuery.of(context).size.height;
-              break;
-          }
-
-          var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
-          var cameraPreviewWidth =
-              cameraPreviewHeight * _cameraController.value.aspectRatio;
-          var cameraPreviewBox = RotatedBox(
-            quarterTurns: turns,
-            child: Container(
-              child: CameraPreview(_cameraController),
-              height: cameraPreviewHeight,
-              width: cameraPreviewWidth,
-            ),
-          );
-
+          var cameraPreviewBox = _cameraManager.previewBox(context);
           var stackChildren = List<Widget>();
           stackChildren.add(Center(child: cameraPreviewBox));
           if (_state == DfNightSelfiesState.COUNTDOWN) {
             stackChildren.add(
               Center(
-                child: Text(
-                  '$_remainingTimer',
-                  style: TextStyle(fontSize: 64, color: Colors.white30),
-                  textAlign: TextAlign.center,
-                ),
+                child: _countdownManager.widget(),
               ),
             );
           }
@@ -246,21 +201,20 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
             icon: Icon(Icons.save),
             onPressed: () async {
               pauseVideo();
-              await saveMedia(_mediaPreviewPath);
+              await _exportManager.saveMedia();
               restartPreview();
             },
           ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              deleteTemporaryMedia();
-              restartPreview();
+              deleteTemporaryMediaAndRestartPreview();
             },
           ),
           IconButton(
             icon: Icon(Icons.share),
             onPressed: () async {
-              await shareMedia();
+              await _exportManager.shareMedia();
             },
           ),
         ];
@@ -278,13 +232,11 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
             onPressed: togglePreviewSize,
           ),
           IconButton(
-            icon: Icon(_timer == 10
-                ? Icons.timer_10
-                : _timer == 3 ? Icons.timer_3 : Icons.timer_off),
+            icon: _countdownManager.icon,
             onPressed: toggleTimer,
           ),
           IconButton(
-            icon: Icon(_photoOrVideo ? Icons.camera_alt : Icons.videocam),
+            icon: Icon(_cameraManager.isPhotoMode ? Icons.camera_alt : Icons.videocam),
             onPressed: togglePhotoOrVideo,
           ),
         ];
@@ -303,7 +255,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
           IconButton(
             icon: Icon(Icons.fiber_manual_record),
             color: Colors.red,
-            onPressed: stopVideo,
+            onPressed: stopVideoRecording,
           )
         ];
     }
@@ -314,93 +266,51 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   void restartPreview() {
     setState(() {
       _imagePreview = null;
-      _mediaPreviewPath = null;
+      _exportManager.reset();
       _state = DfNightSelfiesState.CAMERA_PREVIEW;
     });
   }
 
   void pickColor() {
-    List<MaterialColor> colors = List<MaterialColor>();
+    var colors = List<MaterialColor>();
     colors.addAll(Colors.primaries);
     colors.add(MaterialColor(Colors.white.value, Map()));
 
     showDialog(
       context: context,
-      builder: (_) => Center(
-        child: Material(
-          child: MaterialColorPicker(
-              allowShades: false,
-              colors: colors,
-              onMainColorChange: (Color color) {
-                setState(() {
-                  _backgroundColor = color;
-                  _preferences.setInt(
-                      backgroundColorKey, _backgroundColor.value);
-                });
-              },
-              selectedColor: _backgroundColor),
-        ),
-      ),
+      builder: (_) =>
+          Center(
+            child: Material(
+              child: MaterialColorPicker(
+                  allowShades: false,
+                  colors: colors,
+                  onMainColorChange: (Color color) {
+                    setState(() {
+                      _backgroundColor = color;
+                      _preferences.setInt(
+                          backgroundColorKey, _backgroundColor.value);
+                    });
+                  },
+                  selectedColor: _backgroundColor),
+            ),
+          ),
     );
   }
 
   void togglePreviewSize() {
     setState(() {
-      ++_pictureToScreenRatio;
-      if (_pictureToScreenRatio > 5) {
-        _pictureToScreenRatio = 2;
-      }
-      _preferences.setInt(pictureToScreenRatioKey, _pictureToScreenRatio);
+      _cameraManager.togglePreviewSize();
     });
-  }
-
-  List<int> imageBytes() {
-    return new File(_mediaPreviewPath).readAsBytesSync();
-  }
-
-  Future saveMedia(String mediaPath) async {
-    if (Platform.isAndroid) {
-      var permission = await PermissionHandler()
-          .requestPermissions([PermissionGroup.storage]);
-      if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
-        return Future.error('Write storage permission not granted');
-      }
-
-      if (_photoOrVideo) {
-        GallerySaver.saveImage(mediaPath);
-      } else {
-        GallerySaver.saveVideo(mediaPath);
-      }
-    } else {
-      var permission = await PermissionHandler()
-          .requestPermissions([PermissionGroup.photos]);
-      if (permission[PermissionGroup.photos] != PermissionStatus.granted) {
-        return Future.error('Photo permission not granted');
-      }
-
-      FlutterPhotokit.saveToCameraRoll(filePath: mediaPath);
-    }
   }
 
   void pauseVideo() {
     _videoPlayerController?.pause();
   }
 
-  void deleteTemporaryMedia() {
+  void deleteTemporaryMediaAndRestartPreview() {
     pauseVideo();
-
-    File(_mediaPreviewPath).delete();
-    _mediaPreviewPath = null;
-
-    setState(() {
-      _state = DfNightSelfiesState.CAMERA_PREVIEW;
-    });
-  }
-
-  Future shareMedia() async {
-    var fileBaseName = basename(_mediaPreviewPath);
-    return Share.file(fileBaseName, fileBaseName, imageBytes(),
-        _photoOrVideo ? 'image/png' : 'video/mp4');
+    _exportManager.deleteTemporaryFile();
+    restartPreview();
   }
 
   void togglePhotoOrVideo() {
@@ -409,8 +319,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     }
 
     setState(() {
-      _photoOrVideo = !_photoOrVideo;
-      _preferences.setBool(photoOrVideoKey, _photoOrVideo);
+      _cameraManager.switchMode();
     });
   }
 
@@ -420,54 +329,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     }
 
     setState(() {
-      switch (_timer) {
-        case 0:
-          _timer = 3;
-          break;
-        case 3:
-          _timer = 10;
-          break;
-        default:
-          _timer = 0;
-          break;
-      }
-      _preferences.setInt(timerKey, _timer);
+      _countdownManager.toggle();
     });
-  }
-
-  Future<CameraDescription> getFrontCamera() async {
-    final cameras = await availableCameras();
-    for (CameraDescription cameraDescription in cameras) {
-      if (cameraDescription.lensDirection == CameraLensDirection.front) {
-        return cameraDescription;
-      }
-    }
-
-    return null;
-  }
-
-  Future initializeCameraController() async {
-    var permission = await PermissionHandler().requestPermissions(
-        [PermissionGroup.camera, PermissionGroup.microphone]);
-    if (permission[PermissionGroup.camera] != PermissionStatus.granted) {
-      return Future.error('Camera permission not granted');
-    }
-    if (permission[PermissionGroup.microphone] != PermissionStatus.granted) {
-      return Future.error('Microphone permission not granted');
-    }
-
-    // In order to display the current output from the Camera, you need to
-    // create a CameraController.
-    _cameraController = CameraController(
-      await getFrontCamera(),
-      ResolutionPreset.max,
-    );
-
-    // Next, you need to initialize the controller. This returns a Future
-    await _cameraController.initialize();
-    if (_state == DfNightSelfiesState.INIT) {
-      _state = DfNightSelfiesState.CAMERA_PREVIEW;
-    }
   }
 
   takePhoto() async {
@@ -476,17 +339,13 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     }
 
     try {
-      await _initializeCameraControllerFuture;
+      await _cameraManager.initFuture();
 
-      final imagePath = join(
-        (await getTemporaryDirectory()).path,
-        'DFNightSelfies_${getDateTime()}.png',
-      );
+      var imagePath = await _exportManager.getTemporaryFile(true);
 
-      await _cameraController.takePicture(imagePath);
+      await _cameraManager.takePicture(imagePath);
       setState(() {
         _state = DfNightSelfiesState.MEDIA_PREVIEW;
-        _mediaPreviewPath = imagePath;
         _imagePreview = Center(child: Image.file(File(imagePath)));
       });
     } catch (e) {
@@ -495,28 +354,21 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     }
   }
 
-  getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+  startVideoRecording() async {
+    await _cameraManager.initFuture();
 
-  startVideo() async {
-    await _initializeCameraControllerFuture;
-
-    _mediaPreviewPath = join(
-      (await getTemporaryDirectory()).path,
-      'DFNightSelfies_${getDateTime()}.mp4',
-    );
-
-    await _cameraController.prepareForVideoRecording();
-    await _cameraController.startVideoRecording(_mediaPreviewPath);
+    var videoPath = await _exportManager.getTemporaryFile(false);
+    await _cameraManager.startVideoRecording(videoPath);
     setState(() {
-      _state = DfNightSelfiesState.RECORDING;
+    _state = DfNightSelfiesState.RECORDING;
     });
   }
 
-  stopVideo() async {
-    await _cameraController.stopVideoRecording();
+  stopVideoRecording() async {
+    await _cameraManager.stopVideoRecording();
     _videoPlayerController?.dispose();
     _videoPlayerController =
-        VideoPlayerController.file(File(_mediaPreviewPath));
+        VideoPlayerController.file(File(_exportManager.temporaryFile));
     await _videoPlayerController.initialize();
     setState(() {
       _state = DfNightSelfiesState.MEDIA_PREVIEW;
@@ -525,36 +377,23 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
   void startCountDownOrTake() {
     if (_state == DfNightSelfiesState.RECORDING) {
-      stopVideo();
+      stopVideoRecording();
     }
 
     if (_state != DfNightSelfiesState.CAMERA_PREVIEW) {
       return;
     }
 
-    if (_timer == 0) {
+    if (!_countdownManager.enabled) {
       take();
     } else {
-      setState(() {
-        _remainingTimer = _timer;
-        _state = DfNightSelfiesState.COUNTDOWN;
-        _countdownTimer = new Timer.periodic(
-          Duration(seconds: 1),
-          (Timer timer) => setState(
-            () {
-              if (_countdownTimer == null) {
-                // canceled
-                return;
-              }
-
-              --_remainingTimer;
-              if (_remainingTimer <= 0) {
-                _countdownTimer.cancel();
-                take();
-              }
-            },
-          ),
-        );
+      _state = DfNightSelfiesState.COUNTDOWN;
+      _countdownManager.schedule((completed) {
+        setState(() {
+          if (completed) {
+            take();
+          }
+        });
       });
     }
   }
@@ -564,23 +403,20 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
       _state = DfNightSelfiesState.TAKING;
     });
 
-    _photoOrVideo ? takePhoto() : startVideo();
+    _cameraManager.isPhotoMode ? takePhoto() : startVideoRecording();
   }
 
   void cancelCountDown() {
-    _countdownTimer.cancel();
-    _countdownTimer = null;
+    _countdownManager.cancel();
     restartPreview();
   }
 
   void loadSettings() async {
     _preferences = await SharedPreferences.getInstance();
+    await _cameraManager.loadSettings();
+    await _countdownManager.loadSettings();
 
     setState(() {
-      _photoOrVideo = _preferences.getBool(photoOrVideoKey) ?? _photoOrVideo;
-      _timer = _preferences.getInt(timerKey) ?? _timer;
-      _pictureToScreenRatio =
-          _preferences.getInt(pictureToScreenRatioKey) ?? _pictureToScreenRatio;
       var backgroundColorValue =
           _preferences.getInt(backgroundColorKey) ?? _backgroundColor.value;
       _backgroundColor = Color(backgroundColorValue);
