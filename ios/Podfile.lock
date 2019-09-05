@@ -4,8 +4,6 @@ PODS:
   - esys_flutter_share (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_photokit (0.1):
-    - Flutter
   - gallery_saver (0.0.1):
     - Flutter
   - native_device_orientation (0.0.1):
@@ -25,7 +23,6 @@ DEPENDENCIES:
   - camera (from `.symlinks/plugins/camera/ios`)
   - esys_flutter_share (from `.symlinks/plugins/esys_flutter_share/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
-  - flutter_photokit (from `.symlinks/plugins/flutter_photokit/ios`)
   - gallery_saver (from `.symlinks/plugins/gallery_saver/ios`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -41,8 +38,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/esys_flutter_share/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
-  flutter_photokit:
-    :path: ".symlinks/plugins/flutter_photokit/ios"
   gallery_saver:
     :path: ".symlinks/plugins/gallery_saver/ios"
   native_device_orientation:
@@ -62,7 +57,6 @@ SPEC CHECKSUMS:
   camera: d56ad165545ae5a0ffb892376033760a969c68c8
   esys_flutter_share: 403498dab005b36ce1f8d7aff377e81f0621b0b4
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
-  flutter_photokit: 07df993f448ea6d0fe7629a78d322b61364e0de9
   gallery_saver: 9fc173c9f4fcc48af53b2a9ebea1b643255be542
   native_device_orientation: e24d00be281de72996640885d80e706142707660
   path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
