@@ -13,7 +13,6 @@ dependencies:
   cupertino_icons:
   esys_flutter_share:
   flutter_material_color_picker:
-  flutter_photokit:
   gallery_saver:
   intl:
   native_device_orientation:

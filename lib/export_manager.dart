@@ -8,7 +8,6 @@ import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-import 'package:flutter_photokit/flutter_photokit.dart';
 
 class ExportManager {
   String temporaryFile;
@@ -43,20 +42,18 @@ class ExportManager {
       if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
         return Future.error('Write storage permission not granted');
       }
-
-      if (_isPhotoMode) {
-        GallerySaver.saveImage(temporaryFile);
-      } else {
-        GallerySaver.saveVideo(temporaryFile);
-      }
     } else {
       var permission = await PermissionHandler()
           .requestPermissions([PermissionGroup.photos]);
       if (permission[PermissionGroup.photos] != PermissionStatus.granted) {
         return Future.error('Photo permission not granted');
       }
+    }
 
-      FlutterPhotokit.saveToCameraRoll(filePath: temporaryFile);
+    if (_isPhotoMode) {
+      GallerySaver.saveImage(temporaryFile);
+    } else {
+      GallerySaver.saveVideo(temporaryFile);
     }
   }
 
