@@ -26,8 +26,8 @@ class DfNightSelfiesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'DF Night Selfies',
-        home: DfNightSelfiesMain(title: 'DF Night Selfies'),
+      title: 'DF Night Selfies',
+      home: DfNightSelfiesMain(title: 'DF Night Selfies'),
     );
   }
 }
@@ -43,7 +43,6 @@ class DfNightSelfiesMain extends StatefulWidget {
 
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     with WidgetsBindingObserver {
-
   static final backgroundColorKey = "BackgroundColor";
   var _backgroundColor = Colors.white;
 
@@ -236,7 +235,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
             onPressed: toggleTimer,
           ),
           IconButton(
-            icon: Icon(_cameraManager.isPhotoMode ? Icons.camera_alt : Icons.videocam),
+            icon: Icon(
+                _cameraManager.isPhotoMode ? Icons.camera_alt : Icons.videocam),
             onPressed: togglePhotoOrVideo,
           ),
         ];
@@ -278,22 +278,22 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
 
     showDialog(
       context: context,
-      builder: (_) =>
-          Center(
-            child: Material(
-              child: MaterialColorPicker(
-                  allowShades: false,
-                  colors: colors,
-                  onMainColorChange: (Color color) {
-                    setState(() {
-                      _backgroundColor = color;
-                      _preferences.setInt(
-                          backgroundColorKey, _backgroundColor.value);
-                    });
-                  },
-                  selectedColor: _backgroundColor),
-            ),
+      builder: (_) => Center(
+        child: Material(
+          child: MaterialColorPicker(
+            allowShades: false,
+            colors: colors,
+            onMainColorChange: (Color color) {
+              setState(() {
+                _backgroundColor = color;
+                _preferences.setInt(backgroundColorKey, _backgroundColor.value);
+              });
+            },
+            selectedColor: _backgroundColor,
+            shrinkWrap: true,
           ),
+        ),
+      ),
     );
   }
 
@@ -360,7 +360,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     var videoPath = await _exportManager.getTemporaryFile(false);
     await _cameraManager.startVideoRecording(videoPath);
     setState(() {
-    _state = DfNightSelfiesState.RECORDING;
+      _state = DfNightSelfiesState.RECORDING;
     });
   }
 
