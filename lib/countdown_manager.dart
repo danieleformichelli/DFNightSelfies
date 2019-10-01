@@ -11,7 +11,7 @@ class CountdownManager {
   Timer _countdownTimer;
 
   bool get enabled {
-    return _timer == 0;
+    return _timer != 0;
   }
 
   void toggle() {

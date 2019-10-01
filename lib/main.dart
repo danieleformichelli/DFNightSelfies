@@ -387,12 +387,14 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     if (!_countdownManager.enabled) {
       take();
     } else {
-      _state = DfNightSelfiesState.COUNTDOWN;
-      _countdownManager.schedule((completed) {
-        setState(() {
-          if (completed) {
-            take();
-          }
+      setState(() {
+        _state = DfNightSelfiesState.COUNTDOWN;
+        _countdownManager.schedule((completed) {
+          setState(() {
+            if (completed) {
+              take();
+            }
+          });
         });
       });
     }
