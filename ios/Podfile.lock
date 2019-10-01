@@ -22,7 +22,7 @@ PODS:
 DEPENDENCIES:
   - camera (from `.symlinks/plugins/camera/ios`)
   - esys_flutter_share (from `.symlinks/plugins/esys_flutter_share/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `.symlinks/flutter/ios`)
   - gallery_saver (from `.symlinks/plugins/gallery_saver/ios`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -37,7 +37,7 @@ EXTERNAL SOURCES:
   esys_flutter_share:
     :path: ".symlinks/plugins/esys_flutter_share/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: ".symlinks/flutter/ios"
   gallery_saver:
     :path: ".symlinks/plugins/gallery_saver/ios"
   native_device_orientation:
@@ -54,7 +54,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player/ios"
 
 SPEC CHECKSUMS:
-  camera: d56ad165545ae5a0ffb892376033760a969c68c8
+  camera: 38cc83ae9a5667bb5a71c7d9edaf60a91920fd4e
   esys_flutter_share: 403498dab005b36ce1f8d7aff377e81f0621b0b4
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   gallery_saver: 9fc173c9f4fcc48af53b2a9ebea1b643255be542
