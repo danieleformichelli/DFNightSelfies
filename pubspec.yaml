@@ -3,7 +3,7 @@ description: An application to take selfies in low light conditions
 
 version: 2.0.1+51
 
-environment:gem
+environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
