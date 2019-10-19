@@ -17,7 +17,6 @@ dependencies:
   intl:
   native_device_orientation:
   path:
-  path_provider:
   permission_handler:
   screen:
   shared_preferences:
