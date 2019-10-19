@@ -34,4 +34,4 @@ flutter_icons:
   android: true
   ios: true
   image_path_android: "images/launcher.png"
-  image_path_ios: "images/launcher_full.png"
+  image_path_ios: "images/launcher.png"
