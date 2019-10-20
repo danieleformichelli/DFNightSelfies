@@ -49,7 +49,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   var _state = DfNightSelfiesState.INIT;
   VideoPlayerController _videoPlayerController;
   Widget _imagePreview;
-  AppLifecycleState _lastLifecycleState;
+  bool _isPaused = false;
   SharedPreferences _preferences;
   CameraManager _cameraManager = CameraManager();
   ExportManager _exportManager = ExportManager();
@@ -76,14 +76,13 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
-      if (_lastLifecycleState != AppLifecycleState.resumed &&
-          state == AppLifecycleState.resumed) {
+      if (_isPaused && state == AppLifecycleState.resumed) {
+        _isPaused = false;
         initializeCamera();
-      } else if (_lastLifecycleState == AppLifecycleState.resumed &&
-          state != AppLifecycleState.resumed) {
+      } else if (!_isPaused && state == AppLifecycleState.paused) {
+        _isPaused = true;
         _cameraManager.dispose();
       }
-      _lastLifecycleState = state;
     });
   }
 
