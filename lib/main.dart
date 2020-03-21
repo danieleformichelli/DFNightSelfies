@@ -214,7 +214,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
       case DfNightSelfiesState.TAKING:
         return <Widget>[
           IconButton(
-            icon: Icon(Icons.colorize),
+            icon: Icon(Icons.color_lens),
             onPressed: pickColor,
           ),
           IconButton(
