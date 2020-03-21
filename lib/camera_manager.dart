@@ -33,8 +33,7 @@ class CameraManager {
   }
 
   Future initializeCameraController() async {
-    var permission = await PermissionHandler().requestPermissions(
-        [PermissionGroup.camera, PermissionGroup.microphone]);
+    var permission = await PermissionHandler().requestPermissions([PermissionGroup.camera, PermissionGroup.microphone]);
     if (permission[PermissionGroup.camera] != PermissionStatus.granted) {
       return Future.error('Camera permission not granted');
     }
@@ -97,8 +96,7 @@ class CameraManager {
     }
 
     var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
-    var cameraPreviewWidth =
-        cameraPreviewHeight * _cameraController.value.aspectRatio;
+    var cameraPreviewWidth = cameraPreviewHeight * _cameraController.value.aspectRatio;
     return RotatedBox(
       quarterTurns: turns,
       child: Container(
@@ -139,7 +137,6 @@ class CameraManager {
   Future loadSettings() async {
     var preferences = await SharedPreferences.getInstance();
     _isPhotoMode = preferences.getBool(photoOrVideoKey) ?? _isPhotoMode;
-    _pictureToScreenRatio =
-        preferences.getInt(pictureToScreenRatioKey) ?? _pictureToScreenRatio;
+    _pictureToScreenRatio = preferences.getInt(pictureToScreenRatioKey) ?? _pictureToScreenRatio;
   }
 }

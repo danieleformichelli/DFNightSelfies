@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' show join;
 import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 
 class ExportManager {
   String temporaryFile;
@@ -20,7 +20,8 @@ class ExportManager {
   Future<String> getTemporaryFile(bool isPhotoMode) async {
     if (isPhotoMode) {
       temporaryFile = join(
-        (await getTemporaryDirectory()).path,'DFNightSelfies_${getDateTime()}.png',
+        (await getTemporaryDirectory()).path,
+        'DFNightSelfies_${getDateTime()}.png',
       );
     } else {
       temporaryFile = join(
@@ -37,14 +38,12 @@ class ExportManager {
 
   Future saveMedia() async {
     if (Platform.isAndroid) {
-      var permission = await PermissionHandler()
-          .requestPermissions([PermissionGroup.storage]);
+      var permission = await PermissionHandler().requestPermissions([PermissionGroup.storage]);
       if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
         return Future.error('Write storage permission not granted');
       }
     } else {
-      var permission = await PermissionHandler()
-          .requestPermissions([PermissionGroup.photos]);
+      var permission = await PermissionHandler().requestPermissions([PermissionGroup.photos]);
       if (permission[PermissionGroup.photos] != PermissionStatus.granted) {
         return Future.error('Photo permission not granted');
       }
@@ -59,8 +58,7 @@ class ExportManager {
 
   Future shareMedia() async {
     var fileBaseName = basename(temporaryFile);
-    return Share.file(fileBaseName, fileBaseName, imageBytes(),
-        _isPhotoMode ? 'image/png' : 'video/mp4');
+    return Share.file(fileBaseName, fileBaseName, imageBytes(), _isPhotoMode ? 'image/png' : 'video/mp4');
   }
 
   List<int> imageBytes() {

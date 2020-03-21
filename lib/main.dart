@@ -13,14 +13,7 @@ import 'package:video_player/video_player.dart';
 
 void main() => runApp(DfNightSelfiesApp());
 
-enum DfNightSelfiesState {
-  INIT,
-  CAMERA_PREVIEW,
-  COUNTDOWN,
-  TAKING,
-  RECORDING,
-  MEDIA_PREVIEW
-}
+enum DfNightSelfiesState { INIT, CAMERA_PREVIEW, COUNTDOWN, TAKING, RECORDING, MEDIA_PREVIEW }
 
 class DfNightSelfiesApp extends StatelessWidget {
   @override
@@ -41,8 +34,7 @@ class DfNightSelfiesMain extends StatefulWidget {
   _DfNightSelfiesMainState createState() => _DfNightSelfiesMainState();
 }
 
-class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
-    with WidgetsBindingObserver {
+class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBindingObserver {
   static final backgroundColorKey = "BackgroundColor";
   var _backgroundColor = Colors.white;
 
@@ -234,8 +226,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
             onPressed: toggleTimer,
           ),
           IconButton(
-            icon: Icon(
-                _cameraManager.isPhotoMode ? Icons.camera_alt : Icons.videocam),
+            icon: Icon(_cameraManager.isPhotoMode ? Icons.camera_alt : Icons.videocam),
             onPressed: togglePhotoOrVideo,
           ),
         ];
@@ -366,8 +357,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
   stopVideoRecording() async {
     await _cameraManager.stopVideoRecording();
     _videoPlayerController?.dispose();
-    _videoPlayerController =
-        VideoPlayerController.file(File(_exportManager.temporaryFile));
+    _videoPlayerController = VideoPlayerController.file(File(_exportManager.temporaryFile));
     await _videoPlayerController.initialize();
     setState(() {
       _state = DfNightSelfiesState.MEDIA_PREVIEW;
@@ -418,8 +408,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain>
     await _countdownManager.loadSettings();
 
     setState(() {
-      var backgroundColorValue =
-          _preferences.getInt(backgroundColorKey) ?? _backgroundColor.value;
+      var backgroundColorValue = _preferences.getInt(backgroundColorKey) ?? _backgroundColor.value;
       _backgroundColor = Color(backgroundColorValue);
     });
   }
