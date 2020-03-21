@@ -36,7 +36,8 @@ class DfNightSelfiesMain extends StatefulWidget {
 
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBindingObserver {
   static final backgroundColorKey = "BackgroundColor";
-  var _backgroundColor = Colors.white;
+  static final materialWhite = MaterialColor(Colors.white.value, Map());
+  var _backgroundColor = materialWhite;
 
   var _state = DfNightSelfiesState.INIT;
   VideoPlayerController _videoPlayerController;
@@ -263,8 +264,8 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
 
   void pickColor() {
     var colors = List<MaterialColor>();
+    colors.add(materialWhite);
     colors.addAll(Colors.primaries);
-    colors.add(MaterialColor(Colors.white.value, Map()));
 
     showDialog(
       context: context,
@@ -409,7 +410,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
 
     setState(() {
       var backgroundColorValue = _preferences.getInt(backgroundColorKey) ?? _backgroundColor.value;
-      _backgroundColor = Color(backgroundColorValue);
+      _backgroundColor = MaterialColor(backgroundColorValue, Map());
     });
   }
 }
