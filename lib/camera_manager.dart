@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
@@ -97,12 +99,16 @@ class CameraManager {
 
     var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
     var cameraPreviewWidth = cameraPreviewHeight * _cameraController.value.aspectRatio;
+    var borderRadius = 0.1 * min(cameraPreviewWidth, cameraPreviewHeight);
     return RotatedBox(
       quarterTurns: turns,
-      child: Container(
-        child: CameraPreview(_cameraController),
-        height: cameraPreviewHeight,
-        width: cameraPreviewWidth,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Container(
+          child: CameraPreview(_cameraController),
+          height: cameraPreviewHeight,
+          width: cameraPreviewWidth,
+        ),
       ),
     );
   }

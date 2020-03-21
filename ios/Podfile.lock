@@ -10,7 +10,9 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (4.0.0):
+  - path_provider_macos (0.0.1):
+    - Flutter
+  - "permission_handler (4.4.0+hotfix.2)":
     - Flutter
   - screen (0.0.1):
     - Flutter
@@ -32,6 +34,7 @@ DEPENDENCIES:
   - gallery_saver (from `.symlinks/plugins/gallery_saver/ios`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_macos (from `.symlinks/plugins/path_provider_macos/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - screen (from `.symlinks/plugins/screen/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
@@ -53,6 +56,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/native_device_orientation/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_macos:
+    :path: ".symlinks/plugins/path_provider_macos/ios"
   permission_handler:
     :path: ".symlinks/plugins/permission_handler/ios"
   screen:
@@ -75,7 +80,8 @@ SPEC CHECKSUMS:
   gallery_saver: 9fc173c9f4fcc48af53b2a9ebea1b643255be542
   native_device_orientation: e24d00be281de72996640885d80e706142707660
   path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
-  permission_handler: 0fb88b8a3c23e31e5de45b8f1bb8b7de28cf8941
+  path_provider_macos: f760a3c5b04357c380e2fddb6f9db6f3015897e0
+  permission_handler: d5d46b2ca93671e8dcf870b949e304c7ddb65ad0
   screen: abd91ca7bf3426e1cc3646d27e9b2358d6bf07b0
   shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
   shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
