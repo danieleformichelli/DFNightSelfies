@@ -37,16 +37,15 @@ class ExportManager {
   getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
 
   Future saveMedia() async {
+    PermissionStatus permissionStatus;
     if (Platform.isAndroid) {
-      var permission = await PermissionHandler().requestPermissions([PermissionGroup.storage]);
-      if (permission[PermissionGroup.storage] != PermissionStatus.granted) {
-        return Future.error('Write storage permission not granted');
-      }
+      permissionStatus = await Permission.storage.request();
     } else {
-      var permission = await PermissionHandler().requestPermissions([PermissionGroup.photos]);
-      if (permission[PermissionGroup.photos] != PermissionStatus.granted) {
-        return Future.error('Photo permission not granted');
-      }
+      permissionStatus = await Permission.photos.request();
+    }
+    if (!permissionStatus.isGranted) {
+      openAppSettings();
+      return;
     }
 
     if (_isPhotoMode) {
