@@ -50,7 +50,10 @@ class CameraManager {
     );
 
     // Next, you need to initialize the controller. This returns a Future
-    await _cameraController.initialize();
+    await _cameraController.initialize().then((value) {
+      _cameraController.setFocusMode(FocusMode.auto);
+      _cameraController.setFlashMode(FlashMode.off);
+    });
   }
 
   void dispose() {
