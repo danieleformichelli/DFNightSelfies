@@ -74,55 +74,41 @@ class CameraManager {
   }
 
   Widget previewBox(BuildContext context) {
-    int turns;
-    double referenceSize;
     var size = MediaQuery.of(context).size;
+    var cameraPreviewHeight = size.height / _pictureToScreenRatio;
+    double cameraPreviewWidth;
     switch (NativeDeviceOrientationReader.orientation(context)) {
       case NativeDeviceOrientation.landscapeLeft:
-        turns = -1;
-        referenceSize = size.width;
-        break;
       case NativeDeviceOrientation.landscapeRight:
-        turns = 1;
-        referenceSize = size.width;
-        break;
-      case NativeDeviceOrientation.portraitDown:
-        turns = 2;
-        referenceSize = size.height;
+        cameraPreviewWidth = cameraPreviewHeight * _cameraController.value.aspectRatio;
         break;
       default:
-        turns = 0;
-        referenceSize = size.height;
+        cameraPreviewWidth = cameraPreviewHeight / _cameraController.value.aspectRatio;
         break;
     }
 
-    var cameraPreviewHeight = referenceSize / _pictureToScreenRatio;
-    var cameraPreviewWidth = cameraPreviewHeight * _cameraController.value.aspectRatio;
     var borderRadius = 0.1 * min(cameraPreviewWidth, cameraPreviewHeight);
-    return RotatedBox(
-      quarterTurns: turns,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: Container(
-          child: CameraPreview(_cameraController),
-          height: cameraPreviewHeight,
-          width: cameraPreviewWidth,
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Container(
+        child: CameraPreview(_cameraController),
+        height: cameraPreviewHeight,
+        width: cameraPreviewWidth,
       ),
     );
   }
 
-  Future takePicture(String path) async {
-    await _cameraController.takePicture(path);
+  Future<XFile> takePicture() async {
+    return await _cameraController.takePicture();
   }
 
-  Future startVideoRecording(String path) async {
+  Future startVideoRecording() async {
     await _cameraController.prepareForVideoRecording();
-    await _cameraController.startVideoRecording(path);
+    await _cameraController.startVideoRecording();
   }
 
-  Future stopVideoRecording() async {
-    await _cameraController.stopVideoRecording();
+  Future<XFile> stopVideoRecording() async {
+    return await _cameraController.stopVideoRecording();
   }
 
   void togglePreviewSize() {

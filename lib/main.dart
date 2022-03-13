@@ -5,9 +5,9 @@ import 'package:dfnightselfies/camera_manager.dart';
 import 'package:dfnightselfies/countdown_manager.dart';
 import 'package:dfnightselfies/export_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
-import 'package:screen/screen.dart';
+import 'package:device_display_brightness/device_display_brightness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
@@ -36,19 +36,7 @@ class DfNightSelfiesMain extends StatefulWidget {
 
 class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBindingObserver {
   static final backgroundColorKey = "BackgroundColor";
-  static final List<MaterialColor> colors = [
-    MaterialColor(Colors.white.value, Map()),
-    Colors.red,
-    Colors.pink,
-    Colors.purple,
-    MaterialColor(Color(0xff1300fe).value, Map()),
-    Colors.lightBlue,
-    Colors.teal,
-    Colors.lightGreen,
-    Colors.yellow,
-    Colors.orange
-  ];
-  var _backgroundColor = colors.first;
+  var _backgroundColor = Colors.white;
 
   var _state = DfNightSelfiesState.INIT;
   VideoPlayerController _videoPlayerController;
@@ -66,7 +54,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
     loadSettings();
     WidgetsBinding.instance.addObserver(this);
     initializeCamera();
-    Screen.setBrightness(1);
+    DeviceDisplayBrightness.setBrightness(1);
   }
 
   void initializeCamera() {
@@ -178,10 +166,10 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
           return CircularProgressIndicator();
         }
 
-        return NativeDeviceOrientationReader(builder: (context) {
-          var cameraPreviewBox = _cameraManager.previewBox(context);
-          var stackChildren = List<Widget>();
-          stackChildren.add(Center(child: cameraPreviewBox));
+        return NativeDeviceOrientationReader(builder: (context)
+        {
+          List<Widget> stackChildren = [];
+          stackChildren.add(Center(child: _cameraManager.previewBox(context)));
           if (_state == DfNightSelfiesState.COUNTDOWN) {
             stackChildren.add(
               Center(
@@ -262,7 +250,7 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
         ];
     }
 
-    return List();
+    return [];
   }
 
   void restartPreview() {
@@ -278,17 +266,40 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
       context: context,
       builder: (_) => Center(
         child: Material(
-          child: MaterialColorPicker(
-            allowShades: false,
-            colors: colors,
-            onMainColorChange: (Color color) {
+          child: BlockPicker(
+            pickerColor: _backgroundColor,
+            onColorChanged: (Color color) {
               setState(() {
                 _backgroundColor = color;
                 _preferences.setInt(backgroundColorKey, _backgroundColor.value);
               });
             },
-            selectedColor: _backgroundColor,
-            shrinkWrap: true,
+            availableColors: [
+              Colors.white,
+              Colors.cyanAccent,
+              Colors.lightBlue,
+              Colors.blueAccent,
+              Colors.red,
+              Colors.pinkAccent,
+              Colors.purple,
+              Colors.purpleAccent,
+              Colors.yellow,
+              Colors.orange,
+              Colors.lightGreen,
+              Colors.teal,
+            ],
+            layoutBuilder: (BuildContext context, List<Color> colors, PickerItem child) {
+              return SizedBox(
+                width: 250,
+                height: 190,
+                child: GridView.count(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  children: [for (Color color in colors) child(color)],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -339,12 +350,11 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
     try {
       await _cameraManager.initFuture();
 
-      var imagePath = await _exportManager.getTemporaryFile(true);
-
-      await _cameraManager.takePicture(imagePath);
+      var imageFile = (await _cameraManager.takePicture()).path;
+      _exportManager.setTemporaryFile(imageFile, true);
       setState(() {
         _state = DfNightSelfiesState.MEDIA_PREVIEW;
-        _imagePreview = Center(child: Image.file(File(imagePath)));
+        _imagePreview = Center(child: Image.file(File(imageFile)));
       });
     } catch (e) {
       _state = DfNightSelfiesState.CAMERA_PREVIEW;
@@ -355,17 +365,17 @@ class _DfNightSelfiesMainState extends State<DfNightSelfiesMain> with WidgetsBin
   startVideoRecording() async {
     await _cameraManager.initFuture();
 
-    var videoPath = await _exportManager.getTemporaryFile(false);
-    await _cameraManager.startVideoRecording(videoPath);
+    await _cameraManager.startVideoRecording();
     setState(() {
       _state = DfNightSelfiesState.RECORDING;
     });
   }
 
   stopVideoRecording() async {
-    await _cameraManager.stopVideoRecording();
+    var videoFile = (await _cameraManager.stopVideoRecording()).path;
+    _exportManager.setTemporaryFile(videoFile, false);
     _videoPlayerController?.dispose();
-    _videoPlayerController = VideoPlayerController.file(File(_exportManager.temporaryFile));
+    _videoPlayerController = VideoPlayerController.file(File(videoFile));
     await _videoPlayerController.initialize();
     setState(() {
       _state = DfNightSelfiesState.MEDIA_PREVIEW;

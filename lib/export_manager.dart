@@ -1,37 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart' show join;
-import 'package:path/path.dart' show basename;
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
+
 
 class ExportManager {
   String temporaryFile;
-  bool _isPhotoMode;
+  bool isPhotoMode;
 
   void reset() {
     temporaryFile = null;
   }
 
-  Future<String> getTemporaryFile(bool isPhotoMode) async {
-    if (isPhotoMode) {
-      temporaryFile = join(
-        (await getTemporaryDirectory()).path,
-        'DFNightSelfies_${getDateTime()}.png',
-      );
-    } else {
-      temporaryFile = join(
-        (await getTemporaryDirectory()).path,
-        'DFNightSelfies_${getDateTime()}.mp4',
-      );
-    }
-
-    _isPhotoMode = isPhotoMode;
-    return temporaryFile;
+  void setTemporaryFile(String temporaryFile, bool isPhotoMode) {
+    this.temporaryFile = temporaryFile;
+    this.isPhotoMode = isPhotoMode;
   }
 
   getDateTime() => DateFormat('yyyyMMddHHmmss').format(DateTime.now());
@@ -48,7 +34,7 @@ class ExportManager {
       return;
     }
 
-    if (_isPhotoMode) {
+    if (isPhotoMode) {
       GallerySaver.saveImage(temporaryFile);
     } else {
       GallerySaver.saveVideo(temporaryFile);
@@ -56,8 +42,7 @@ class ExportManager {
   }
 
   Future shareMedia() async {
-    var fileBaseName = basename(temporaryFile);
-    return Share.file(fileBaseName, fileBaseName, imageBytes(), _isPhotoMode ? 'image/png' : 'video/mp4');
+    Share.shareFiles([temporaryFile]);
   }
 
   List<int> imageBytes() {

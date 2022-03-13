@@ -1,24 +1,24 @@
 name: dfnightselfies
 description: An application to take selfies in low light conditions
 
-version: 2.2.0+56
+version: 2.3.0+57
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   camera:
   cupertino_icons:
-  esys_flutter_share:
-  flutter_material_color_picker:
+  device_display_brightness:
+  flutter_colorpicker:
   gallery_saver:
   intl:
   native_device_orientation:
   path:
   permission_handler:
-  screen:
+  share_plus:
   shared_preferences:
   video_player:
 
