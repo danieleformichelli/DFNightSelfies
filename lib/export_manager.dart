@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,7 +43,7 @@ class ExportManager {
   }
 
   Future shareMedia() async {
-    Share.shareFiles([temporaryFile]);
+    Share.shareXFiles([new XFile(temporaryFile)]);
   }
 
   List<int> imageBytes() {
